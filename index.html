@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>再就職手当 計算ツール</title>
+    <style>
+        body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; background-color: #f0f4f8; padding: 20px; color: #333; }
+        .card { max-width: 450px; margin: 0 auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        h2 { color: #00529b; text-align: center; margin-bottom: 25px; font-size: 1.3rem; border-bottom: 2px solid #00529b; padding-bottom: 10px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.9rem; font-weight: bold; color: #444; margin-bottom: 8px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccd6e0; border-radius: 8px; font-size: 1rem; box-sizing: border-box; background-color: #fff; }
+        button { width: 100%; padding: 15px; background-color: #00b900; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { background-color: #008f00; transform: scale(0.98); }
+        .result-box { margin-top: 25px; padding: 20px; background-color: #eef9ee; border: 2px solid #c2e6c2; border-radius: 12px; display: none; }
+        .res-label { font-size: 0.9rem; color: #555; }
+        .res-value { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin: 10px 0; }
+        .cap-info { font-size: 0.75rem; color: #d32f2f; text-align: center; margin-top: 5px; font-weight: bold; }
+        .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; line-height: 1.6; border-top: 1px solid #eee; padding-top: 15px; }
+        .highlight { color: #00529b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>再就職手当 計算ツール</h2>
+    
+    <div class="input-group">
+        <label>離職時の年齢区分</label>
+        <select id="ageGroup">
+            <option value="under30">30歳未満</option>
+            <option value="30to44">30歳以上 45歳未満</option>
+            <option value="45to59">45歳以上 60歳未満</option>
+            <option value="60to64">60歳以上 65歳未満</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>所定給付日数（日）</label>
+        <select id="totalDays">
+            <option value="90">90日</option>
+            <option value="120">120日</option>
+            <option value="150">150日</option>
+            <option value="180">180日</option>
+            <option value="210">210日</option>
+            <option value="240">240日</option>
+            <option value="270">270日</option>
+            <option value="300">300日</option>
+            <option value="330">330日</option>
+            <option value="360">360日</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>支給残日数（日）</label>
+        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric">
+    </div>
+
+    <div class="input-group">
+        <label>基本手当日額（円）</label>
+        <input type="number" id="dailyAmount" placeholder="例: 6000" inputmode="numeric">
+    </div>
+
+    <button onclick="calculateFinal()">計算を実行</button>
+
+    <div id="resultArea" class="result-box">
+        <div class="res-label">給付率判定：<span id="rateLabel" style="font-weight:bold; color:#00529b;"></span></div>
+        <div class="res-label" style="margin-top:10px;">支給概算額：</div>
+        <div class="res-value" id="finalResult">0 円</div>
+        <div id="capNotice" class="cap-info" style="display:none;">※基本手当日額の上限額（令和7年度基準）を適用</div>
+    </div>
+
+    <div class="footer-note">
+        【基本手当日額について】<br>
+        離職した日の直前6ヶ月間に支払われた賃金の合計を180で割った金額（賃金日額）の約50〜80％（60歳〜64歳は45〜80％）となります。<br><br>
+        ※この計算は概算です。正確な確定額は<span class="highlight">ハローワーク松山</span>が発行する<span class="highlight">「雇用保険受給資格者証」</span>にて通知されます。<br>
+        ※再就職手当の受給には、支給残日数以外にも一定の要件を満たす必要があります。
+    </div>
+</div>
+
+<script>
+function calculateFinal() {
+    const age = document.getElementById('ageGroup').value;
+    const total = parseFloat(document.getElementById('totalDays').value);
+    const remain = parseFloat(document.getElementById('remainDays').value);
+    let daily = parseFloat(document.getElementById('dailyAmount').value);
+
+    if (!remain || !daily) {
+        alert("支給残日数と基本手当日額を入力してください。");
+        return;
+    }
+
+    if (remain > total) {
+        alert("支給残日数が所定給付日数を超えています。");
+        return;
+    }
+
+    // --- 令和7年度 基本手当日額の上限額 ---
+    let isCapped = false;
+    let cap = 0;
+    if (age === "under30") cap = 7255;
+    else if (age === "30to44") cap = 8055;
+    else if (age === "45to59") cap = 8870;
+    else if (age === "60to64") cap = 7623;
+
+    if (daily > cap) {
+        daily = cap;
+        isCapped = true;
+    }
+
+    // --- 給付率判定 ---
+    let rate = 0;
+    let rateText = "";
+    const ratio = remain / total;
+
+    if (ratio >= (2/3)) {
+        rate = 0.7;
+        rateText = "70%";
+    } else if (ratio >= (1/3)) {
+        rate = 0.6;
+        rateText = "60%";
+    } else {
+        rateText = "支給対象外（残日数1/3未満）";
+    }
+
+    // --- 計算実行 ---
+    const result = Math.floor(remain * rate * daily);
+
+    document.getElementById('rateLabel').innerText = rateText;
+    document.getElementById('finalResult').innerText = result.toLocaleString() + " 円";
+    document.getElementById('capNotice').style.display = isCapped ? "block" : "none";
+    document.getElementById('resultArea').style.display = "block";
+}
+</script>
+
+</body>
+</html>
