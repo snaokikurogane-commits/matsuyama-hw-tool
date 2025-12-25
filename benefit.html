@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基本手当 計算ツール</title>
+    <style>
+        body { 
+            font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
+            background-color: #f0f4f8; 
+            padding: 10px; 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+        }
+        .card { 
+            width: 100%; 
+            max-width: 480px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+        h2 { color: #00529b; text-align: center; font-size: 1.3rem; margin-top: 0; border-bottom: 2px solid #00529b; padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #333; }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            font-size: 16px; 
+            border: 1px solid #ccd6e0; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            background-color: #fff;
+        }
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background-color: #00b900; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button:active { background-color: #008f00; }
+        .result-box { margin-top: 20px; padding: 15px; background-color: #eef9ee; border: 2px solid #c2e6c2; border-radius: 10px; display: none; }
+        .res-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; border-bottom: 1px dashed #c2e6c2; padding-bottom: 5px; }
+        .res-label { font-size: 0.9rem; color: #555; }
+        .res-sub { font-size: 1.1rem; font-weight: bold; color: #333; }
+        .res-main { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin: 15px 0 5px 0; }
+        .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.5; }
+        .highlight { color: #00529b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>基本手当 受給額シミュレーター</h2>
+    
+    <div class="input-group">
+        <label>離職時の年齢</label>
+        <select id="age">
+            <option value="29">29歳以下</option>
+            <option value="30">30歳〜34歳</option>
+            <option value="35">35歳〜44歳</option>
+            <option value="45">45歳〜59歳</option>
+            <option value="60">60歳〜64歳</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>被保険者期間（勤続年数）</label>
+        <select id="period">
+            <option value="0">1年未満</option>
+            <option value="1">1年以上 5年未満</option>
+            <option value="5">5年以上 10年未満</option>
+            <option value="10">10年以上 20年未満</option>
+            <option value="20">20年以上</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>離職理由</label>
+        <select id="reason">
+            <option value="jiko">自己都合（一般）</option>
+            <option value="kaisha">会社都合（特定・重責）</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>離職前6ヶ月の賃金総額（円）</label>
+        <input type="number" id="totalSalary" placeholder="例: 1800000" inputmode="numeric">
+        <div style="font-size:0.75rem; color:#666; margin-top:4px;">※ボーナスは含みません。残業代・交通費等は含みます。</div>
+    </div>
+
+    <button onclick="calcBenefit()">計算を実行</button>
+
+    <div id="resultArea" class="result-box">
+        <div class="res-row">
+            <span class="res-label">賃金日額</span>
+            <span class="res-sub" id="wageDaily">0 円</span>
+        </div>
+        <div class="res-row">
+            <span class="res-label">基本手当日額</span>
+            <span class="res-sub" id="basicDaily">0 円</span>
+        </div>
+        <div class="res-row">
+            <span class="res-label">所定給付日数</span>
+            <span class="res-sub"><span id="days">0</span> 日</span>
+        </div>
+        
+        <div style="text-align:center; font-size:0.9rem; margin-top:15px; color:#00529b; font-weight:bold;">受給総額（概算）</div>
+        <div class="res-main" id="totalBenefit">0 円</div>
+    </div>
+
+    <div class="footer-note">
+        ※<span class="highlight">ハローワーク松山</span>仕様（令和7年度基準推定）<br>
+        ※この計算は概算です。正確な受給額・日数は、離職票提出後に決定される<span class="highlight">「雇用保険受給資格者証」</span>をご確認ください。<br>
+        ※待期期間や給付制限期間は考慮していません。
+    </div>
+</div>
+
+<script>
+function calcBenefit() {
+    const ageRange = document.getElementById('age').value;
+    const period = parseInt(document.getElementById('period').value);
+    const reason = document.getElementById('reason').value;
+    const totalSalary = parseFloat(document.getElementById('totalSalary').value);
+
+    if (!totalSalary) { alert("賃金総額を入力してください"); return; }
+
+    // 1. 賃金日額の算出（6ヶ月総額 ÷ 180）
+    let w = Math.floor(totalSalary / 180);
+
+    // --- 賃金日額の上限・下限判定（令和7年度推定値） ---
+    // 下限
+    if (w < 2940) w = 2940;
+    
+    // 上限（年齢別）
+    let maxW = 0;
+    if (ageRange === "29") maxW = 14380;
+    else if (ageRange === "30") maxW = 15990; // 30-44歳を統合して近似
+    else if (ageRange === "35") maxW = 15990;
+    else if (ageRange === "45") maxW = 17620;
+    else if (ageRange === "60") maxW = 16750;
+
+    if (w > maxW) w = maxW;
+    document.getElementById('wageDaily').innerText = w.toLocaleString() + " 円";
+
+
+    // 2. 基本手当日額の算出（給付率計算）
+    let rate = 0; // 給付率
+    let basic = 0;
+
+    // 計算用係数（令和基準）
+    if (ageRange === "60") {
+        // 60-64歳の計算式
+        if (w <= 5330) rate = 0.8;
+        else if (w <= 11670) rate = 0.8 - ((0.35 * (w - 5330)) / (11670 - 5330));
+        else rate = 0.45;
+    } else {
+        // 60歳未満の計算式
+        if (w <= 5330) rate = 0.8;
+        else if (w <= 13010) rate = 0.8 - ((0.3 * (w - 5330)) / (13010 - 5330));
+        else rate = 0.5;
+    }
+    
+    basic = Math.floor(w * rate);
+    
+    // 基本手当日額の上限チェック（令和7年度 推定）
+    let maxBasic = 0;
+    if (ageRange === "29") maxBasic = 7255;
+    else if (ageRange === "30") maxBasic = 8055;
+    else if (ageRange === "35") maxBasic = 8055;
+    else if (ageRange === "45") maxBasic = 8870;
+    else if (ageRange === "60") maxBasic = 7623;
+
+    if (basic > maxBasic) basic = maxBasic;
+    document.getElementById('basicDaily').innerText = basic.toLocaleString() + " 円";
+
+
+    // 3. 所定給付日数の判定
+    let d = 90; // デフォルト
+
+    if (reason === "jiko") {
+        // 自己都合
+        if (period >= 20) d = 150;
+        else if (period >= 10) d = 120;
+        else d = 90; // 10年未満
+    } else {
+        // 会社都合（特定受給資格者）
+        if (ageRange === "29") {
+            if (period >= 5) d = 120;
+            else if (period >= 1) d = 90;
+            else d = 90;
+        } else if (ageRange === "30" || ageRange === "35") { // 30-44歳
+            if (period >= 20) d = 270;
+            else if (period >= 10) d = 240;
+            else if (period >= 5) d = 180;
+            else if (period >= 1) d = 90;
+        } else if (ageRange === "45") { // 45-59歳
+            if (period >= 20) d = 330;
+            else if (period >= 10) d = 270;
+            else if (period >= 5) d = 240;
+            else if (period >= 1) d = 180;
+        } else if (ageRange === "60") { // 60-64歳
+            if (period >= 20) d = 240;
+            else if (period >= 10) d = 210;
+            else if (period >= 5) d = 180;
+            else if (period >= 1) d = 150;
+        }
+    }
+    
+    // 1年未満の会社都合は原則90日だが、個別の事情によるため簡易的に90とする
+
+    document.getElementById('days').innerText = d;
+
+    // 4. 受給総額
+    const total = basic * d;
+    document.getElementById('totalBenefit').innerText = total.toLocaleString() + " 円";
+
+    document.getElementById('resultArea').style.display = "block";
+}
+</script>
+</body>
+</html>
