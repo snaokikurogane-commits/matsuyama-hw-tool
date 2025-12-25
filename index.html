@@ -29,12 +29,12 @@
         input, select { 
             width: 100%; 
             padding: 12px; 
-            font-size: 16px; /* iPhoneでのズーム防止 */
+            font-size: 16px; 
             border: 1px solid #ccd6e0; 
             border-radius: 8px; 
             box-sizing: border-box; 
         }
-        /* 入力エラー時の強調 */
+        /* エラー時の赤枠スタイル */
         .error-border { border: 2px solid #ff4d4d; background-color: #fff0f0; }
 
         button { 
@@ -53,11 +53,28 @@
         .res-value { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin: 10px 0; }
         .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.5; }
         .highlight { color: #00529b; font-weight: bold; }
+        
+        /* ▼新しく追加：全体エラーメッセージのデザイン */
+        #globalError {
+            color: #d32f2f;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: bold;
+            display: none; /* 最初は隠しておく */
+            margin-bottom: 15px;
+            border: 1px solid #ffcccc;
+        }
     </style>
 </head>
 <body>
 <div class="card">
     <h2>再就職手当 計算ツール</h2>
+
+    <div id="globalError">※すべての項目を入力してください</div>
+
     <div class="input-group">
         <label>離職時の年齢区分</label>
         <select id="ageGroup">
@@ -85,13 +102,15 @@
     <div class="input-group">
         <label>支給残日数（日）</label>
         <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric" oninput="checkLimit()">
-        <div id="errorMsg" style="color:#d32f2f; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
+        <div id="limitErrorMsg" style="color:#d32f2f; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
     </div>
     <div class="input-group">
         <label>基本手当日額（円）</label>
         <input type="number" id="dailyAmount" placeholder="例: 6000" inputmode="numeric">
     </div>
+
     <button onclick="calculateFinal()">計算を実行</button>
+
     <div id="resultArea" class="result-box">
         <div style="font-size:0.9rem;">給付率判定：<span id="rateLabel" style="font-weight:bold; color:#00529b;"></span></div>
         <div style="font-size:0.9rem; margin-top:10px;">支給概算額：</div>
@@ -104,22 +123,19 @@
     </div>
 </div>
 <script>
-// ▼新しく追加した機能：入力制限チェック
+// 入力制限チェック（前回の機能）
 function checkLimit() {
     const total = parseInt(document.getElementById('totalDays').value);
     const remainInput = document.getElementById('remainDays');
-    const errorMsg = document.getElementById('errorMsg');
+    const limitMsg = document.getElementById('limitErrorMsg');
     
-    // 入力値が存在し、かつ所定日数を超えていたら修正する
     if (remainInput.value && parseInt(remainInput.value) > total) {
-        remainInput.value = total; // 強制的に上限値に書き換え
-        remainInput.classList.add("error-border"); // 赤枠にする
-        errorMsg.style.display = "block"; // エラーメッセージ表示
-        
-        // 1.5秒後に赤枠とメッセージを消す演出
+        remainInput.value = total;
+        remainInput.classList.add("error-border");
+        limitMsg.style.display = "block";
         setTimeout(() => {
             remainInput.classList.remove("error-border");
-            errorMsg.style.display = "none";
+            limitMsg.style.display = "none";
         }, 1500);
     }
 }
@@ -130,25 +146,44 @@ function calculateFinal() {
     const remain = parseFloat(document.getElementById('remainDays').value);
     let daily = parseFloat(document.getElementById('dailyAmount').value);
     
-    // チェック：残日数が所定日数を超えていないか（念のため）
-    if(remain > total) {
-        alert("支給残日数は所定給付日数以下で入力してください");
-        return;
-    }
+    // ▼ここを変更：アラートではなく、画面内のメッセージを表示
+    const errorBox = document.getElementById('globalError');
+    const remainInput = document.getElementById('remainDays');
+    const dailyInput = document.getElementById('dailyAmount');
 
-    if (!remain || !daily) { alert("入力してください"); return; }
+    // いったんエラー表示を消す
+    errorBox.style.display = "none";
+    remainInput.classList.remove("error-border");
+    dailyInput.classList.remove("error-border");
+
+    // 入力が空のとき
+    if (!remain || !daily) { 
+        errorBox.style.display = "block"; // 赤い帯を表示
+        
+        // 空の欄を赤枠にする
+        if(!remain) remainInput.classList.add("error-border");
+        if(!daily) dailyInput.classList.add("error-border");
+        
+        return; // ここで処理を止める
+    }
+    
+    // 入力が正しい場合、以下を実行
     let cap = 0;
     if (age === "under30") cap = 7255;
     else if (age === "30to44") cap = 8055;
     else if (age === "45to59") cap = 8870;
     else if (age === "60to64") cap = 7623;
+    
     if (daily > cap) daily = cap;
+    
     let rate = 0;
     let rateText = "";
     const ratio = remain / total;
+    
     if (ratio >= (2/3)) { rate = 0.7; rateText = "70%"; }
     else if (ratio >= (1/3)) { rate = 0.6; rateText = "60%"; }
     else { rateText = "支給対象外"; }
+    
     const result = Math.floor(remain * rate * daily);
     document.getElementById('rateLabel').innerText = rateText;
     document.getElementById('finalResult').innerText = result.toLocaleString() + " 円";
