@@ -29,11 +29,14 @@
         input, select { 
             width: 100%; 
             padding: 12px; 
-            font-size: 16px; /* 16pxにするとiPhoneで入力時にズームしません */
+            font-size: 16px; /* iPhoneでのズーム防止 */
             border: 1px solid #ccd6e0; 
             border-radius: 8px; 
             box-sizing: border-box; 
         }
+        /* 入力エラー時の強調 */
+        .error-border { border: 2px solid #ff4d4d; background-color: #fff0f0; }
+
         button { 
             width: 100%; 
             padding: 16px; 
@@ -66,7 +69,7 @@
     </div>
     <div class="input-group">
         <label>所定給付日数（日）</label>
-        <select id="totalDays">
+        <select id="totalDays" onchange="checkLimit()">
             <option value="90">90日</option>
             <option value="120">120日</option>
             <option value="150">150日</option>
@@ -81,7 +84,8 @@
     </div>
     <div class="input-group">
         <label>支給残日数（日）</label>
-        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric">
+        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric" oninput="checkLimit()">
+        <div id="errorMsg" style="color:#d32f2f; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
     </div>
     <div class="input-group">
         <label>基本手当日額（円）</label>
@@ -100,11 +104,38 @@
     </div>
 </div>
 <script>
+// ▼新しく追加した機能：入力制限チェック
+function checkLimit() {
+    const total = parseInt(document.getElementById('totalDays').value);
+    const remainInput = document.getElementById('remainDays');
+    const errorMsg = document.getElementById('errorMsg');
+    
+    // 入力値が存在し、かつ所定日数を超えていたら修正する
+    if (remainInput.value && parseInt(remainInput.value) > total) {
+        remainInput.value = total; // 強制的に上限値に書き換え
+        remainInput.classList.add("error-border"); // 赤枠にする
+        errorMsg.style.display = "block"; // エラーメッセージ表示
+        
+        // 1.5秒後に赤枠とメッセージを消す演出
+        setTimeout(() => {
+            remainInput.classList.remove("error-border");
+            errorMsg.style.display = "none";
+        }, 1500);
+    }
+}
+
 function calculateFinal() {
     const age = document.getElementById('ageGroup').value;
     const total = parseFloat(document.getElementById('totalDays').value);
     const remain = parseFloat(document.getElementById('remainDays').value);
     let daily = parseFloat(document.getElementById('dailyAmount').value);
+    
+    // チェック：残日数が所定日数を超えていないか（念のため）
+    if(remain > total) {
+        alert("支給残日数は所定給付日数以下で入力してください");
+        return;
+    }
+
     if (!remain || !daily) { alert("入力してください"); return; }
     let cap = 0;
     if (age === "under30") cap = 7255;
