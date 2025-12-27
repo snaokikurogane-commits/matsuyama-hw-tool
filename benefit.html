@@ -7,9 +7,7 @@
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
-            /* 背景：ほんのり温かみのあるスノーホワイト */
             background-color: #fffafa; 
-            /* 文字色：黒に近いダークグレー */
             color: #424242; 
             padding: 10px; 
             margin: 0; 
@@ -25,11 +23,10 @@
             box-shadow: 0 4px 15px rgba(128, 0, 0, 0.1); 
             box-sizing: border-box;
             margin-top: 10px;
-            /* ▼アクセントライン：ボルドー（深紅） */
+            /* アクセントラインはボルドーのまま */
             border-top: 5px solid #800000;
         }
         
-        /* 見出し */
         h2 { 
             color: #800000; 
             text-align: center; 
@@ -39,26 +36,33 @@
             padding-bottom: 10px; 
         }
         .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #800000; }
+        
+        /* ▼変更点：ラベルの文字色を黒（濃いグレー）に変更 */
+        label { 
+            display: block; 
+            font-size: 0.9rem; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            color: #333333; 
+        }
         
         input, select { 
             width: 100%; 
             padding: 12px; 
             font-size: 16px; 
-            border: 1px solid #e57373; /* 枠線を優しい赤に */
+            border: 1px solid #e57373; 
             border-radius: 8px; 
             box-sizing: border-box; 
             background-color: #fff;
             color: #333;
         }
-        /* エラー時の赤枠 */
         .error-border { border: 2px solid #d32f2f; background-color: #ffebee; }
 
+        /* ▼変更点：ボタンの背景を緑に変更 */
         button { 
             width: 100%; 
             padding: 16px; 
-            /* ボタン：少し落ち着いた赤 */
-            background-color: #c62828; 
+            background-color: #00b900; /* LINEのような鮮やかな緑 */
             color: white; 
             border: none; 
             border-radius: 8px; 
@@ -69,9 +73,8 @@
             transition: background 0.2s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        button:active { background-color: #b71c1c; }
+        button:active { background-color: #008f00; } /* 押した時は濃い緑 */
         
-        /* 結果表示エリア */
         .result-box { 
             margin-top: 20px; 
             padding: 15px; 
@@ -85,7 +88,6 @@
         .res-sub { font-size: 1.1rem; font-weight: bold; color: #3e2723; }
         .res-main { font-size: 1.8rem; font-weight: 900; color: #b71c1c; text-align: center; margin: 15px 0 5px 0; }
         
-        /* フッター（注意書き） */
         .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #ffcdd2; padding-top: 10px; line-height: 1.5; }
         .warning-box {
             background-color: #fff3e0; 
@@ -95,16 +97,10 @@
             margin-bottom: 15px;
             color: #bf360c;
         }
-        .warning-list {
-            padding-left: 20px; 
-            margin: 5px 0; 
-        }
-        .warning-list li {
-            margin-bottom: 3px;
-        }
+        .warning-list { padding-left: 20px; margin: 5px 0; }
+        .warning-list li { margin-bottom: 3px; }
         .highlight { color: #b71c1c; font-weight: bold; }
         
-        /* 全体エラーメッセージ */
         #globalError {
             color: #b71c1c;
             background-color: #ffcdd2;
@@ -124,7 +120,7 @@
 <div class="card">
     <h2>基本手当計算ツール</h2>
     
-    <div id="globalError">※賃金総額を入力してください</div>
+    <div id="globalError">※内容を確認してください</div>
 
     <div class="input-group">
         <label>離職時の年齢</label>
@@ -140,7 +136,7 @@
     <div class="input-group">
         <label>被保険者期間（勤続年数）</label>
         <select id="period">
-            <option value="0">1年未満</option>
+            <option value="0">1年未満（6ヶ月以上）</option>
             <option value="1">1年以上 5年未満</option>
             <option value="5">5年以上 10年未満</option>
             <option value="10">10年以上 20年未満</option>
@@ -158,7 +154,7 @@
 
     <div class="input-group">
         <label>離職前6ヶ月の賃金総額（円）</label>
-        <input type="number" id="totalSalary" placeholder="例: 1800000" inputmode="numeric">
+        <input type="text" id="totalSalary" placeholder="例: 1,800,000" inputmode="numeric" oninput="formatCurrency(this)">
         <div style="font-size:0.75rem; color:#800000; margin-top:4px;">※ボーナスは含みません。残業代・交通費等は含みます。</div>
     </div>
 
@@ -200,28 +196,55 @@
 </div>
 
 <script>
+// カンマ区切りのフォーマット関数
+function formatCurrency(input) {
+    let val = input.value.replace(/,/g, "");
+    val = val.replace(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+    val = val.replace(/[^0-9]/g, "");
+    
+    if (val === "") {
+        input.value = "";
+        return;
+    }
+    input.value = Number(val).toLocaleString();
+}
+
 function calcBenefit() {
     const ageRange = document.getElementById('age').value;
     const period = parseInt(document.getElementById('period').value);
     const reason = document.getElementById('reason').value;
     const totalSalaryInput = document.getElementById('totalSalary');
-    const totalSalary = parseFloat(totalSalaryInput.value);
+    
+    const totalSalary = parseFloat(totalSalaryInput.value.replace(/,/g, ""));
 
-    // エラー表示リセット
     const errorBox = document.getElementById('globalError');
+    const resultArea = document.getElementById('resultArea');
     errorBox.style.display = "none";
+    resultArea.style.display = "none";
     totalSalaryInput.classList.remove("error-border");
 
+    // バリデーション
     if (!totalSalary) { 
-        errorBox.style.display = "block"; // 赤い帯を表示
-        totalSalaryInput.classList.add("error-border"); // 赤枠
+        errorBox.innerText = "※賃金総額を入力してください";
+        errorBox.style.display = "block"; 
+        totalSalaryInput.classList.add("error-border"); 
         return; 
     }
 
-    // 1. 賃金日額の算出（6ヶ月総額 ÷ 180）
+    // 1年未満のロジック厳格化
+    if (period === 0) { // 1年未満
+        if (reason === "jiko") {
+            errorBox.innerText = "※自己都合退職の場合、1年未満の被保険者期間では受給資格がありません。";
+            errorBox.style.display = "block";
+            return;
+        }
+    }
+
+    // 1. 賃金日額の算出
     let w = Math.floor(totalSalary / 180);
 
-    // --- 賃金日額の上限・下限判定（令和7年度推定値） ---
     if (w < 2940) w = 2940;
     
     let maxW = 0;
@@ -234,7 +257,7 @@ function calcBenefit() {
     if (w > maxW) w = maxW;
     document.getElementById('wageDaily').innerText = w.toLocaleString() + " 円";
 
-    // 2. 基本手当日額の算出（給付率計算）
+    // 2. 基本手当日額の算出
     let rate = 0; 
     let basic = 0;
 
@@ -294,7 +317,7 @@ function calcBenefit() {
     // 4. 受給総額
     const total = basic * d;
     document.getElementById('totalBenefit').innerText = total.toLocaleString() + " 円";
-    document.getElementById('resultArea').style.display = "block";
+    resultArea.style.display = "block";
 }
 </script>
 </body>
