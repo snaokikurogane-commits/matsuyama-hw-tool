@@ -25,17 +25,20 @@
             box-shadow: 0 4px 15px rgba(62, 39, 35, 0.1); 
             box-sizing: border-box;
             margin-top: 10px;
-            /* アクセントライン：濃いイエロー（山吹色） */
+            /* ▼アクセントライン：濃いイエロー（山吹色） */
             border-top: 5px solid #fbc02d;
         }
+        
+        /* 見出し */
         h2 { 
-            color: #f57f17; /* タイトル：オレンジに近い黄色 */
+            color: #f57f17; /* オレンジに近い黄色 */
             text-align: center; 
             font-size: 1.3rem; 
             margin-top: 0; 
             border-bottom: 2px solid #fff59d; 
             padding-bottom: 10px; 
         }
+        
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #5d4037; }
         .sub-label { font-size: 0.75rem; color: #8d6e63; margin-bottom: 5px; display: block; }
@@ -44,7 +47,7 @@
             width: 100%; 
             padding: 12px; 
             font-size: 16px; 
-            border: 1px solid #ffe082; /* 入力枠：薄い黄色 */
+            border: 1px solid #ffe082; /* 枠線を薄い黄色に */
             border-radius: 8px; 
             box-sizing: border-box; 
             background-color: #fff;
@@ -58,7 +61,7 @@
             padding: 16px; 
             /* ボタン：視認性の高いアンバー（琥珀色） */
             background-color: #ffca28; 
-            color: #3e2723; /* 文字は茶色で見やすく */
+            color: #3e2723; 
             border: none; 
             border-radius: 8px; 
             font-size: 1.1rem; 
@@ -70,10 +73,11 @@
         }
         button:active { background-color: #ffb300; }
         
+        /* 結果表示エリア */
         .result-box { 
             margin-top: 20px; 
             padding: 15px; 
-            background-color: #fff9c4; /* 結果エリア：少し濃いクリーム色 */
+            background-color: #fff9c4; /* 少し濃いクリーム色 */
             border: 2px solid #fff176; 
             border-radius: 10px; 
             display: none; 
@@ -83,7 +87,7 @@
         .res-sub { font-size: 1.1rem; font-weight: bold; color: #3e2723; }
         .res-main { font-size: 1.8rem; font-weight: 900; color: #e65100; text-align: center; margin: 15px 0 5px 0; }
         
-        /* フッター */
+        /* フッター（注意書き） */
         .footer-note { font-size: 0.75rem; color: #795548; margin-top: 20px; border-top: 1px solid #fff59d; padding-top: 10px; line-height: 1.5; }
         .warning-box {
             background-color: #fff3cd; 
@@ -256,11 +260,7 @@ function calcRetention() {
     // 1. 新しい賃金日額の算出
     const newDaily = Math.floor(newTotal / newDays);
 
-    // 2. 以前の賃金日額
-    // ※本来は離職時賃金日額ですが、簡易的に基本手当日額を表示のベースにします
-    // 計算には直接使いませんが、比較参考として表示
-    
-    // 再就職手当の給付率判定（上限計算用）
+    // 2. 再就職手当の給付率判定（上限計算用）
     let rate = 0.6;
     if ((remainDays / totalDays) >= (2/3)) {
         rate = 0.7;
@@ -268,25 +268,21 @@ function calcRetention() {
 
     // 3. 上限額の計算
     // 上限額 = 基本手当日額 × (所定給付日数 - 再就職手当の支給日数)
+    // 支給日数 = 残日数 × 給付率
     const paidDays = Math.floor(remainDays * rate); 
     const limitDays = totalDays - paidDays;
     const limitAmount = Math.floor(basicDaily * limitDays);
 
-    // 4. 支給額の計算（差額 × 6ヶ月の基礎日数）
+    // 4. 支給額の計算
     // 差額 = 離職時賃金日額 - 新しい賃金日額
-    // ※このツールでは「基本手当日額」を入力させているため、正確な「離職時賃金日額」は不明です。
-    // そのため、「基本手当日額」を代用して計算するか、ユーザーに警告する必要があります。
-    // 今回は「基本手当日額」と「新賃金日額」の差で計算します（あくまで概算として機能させるため）。
-    // 本来の賃金日額は基本手当日額より高いので、実際の支給額はこれより多くなる可能性があります。
-    
+    // ※離職時賃金日額の代わりに基本手当日額をベースにする簡易計算
     let diff = basicDaily - newDaily; 
     
-    // もし基本手当より高い給料なら0円
     if (diff < 0) diff = 0;
 
     let tentativeAmount = Math.floor(diff * newDays);
 
-    // 支給額決定（上限キャップ）
+    // 上限キャップ
     let final = tentativeAmount;
     if (final > limitAmount) {
         final = limitAmount;
