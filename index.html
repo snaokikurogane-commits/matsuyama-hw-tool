@@ -22,6 +22,8 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
             box-sizing: border-box;
             margin-top: 10px;
+            /* ▼ここを追加しました：上部の太いアクセントライン（青） */
+            border-top: 5px solid #00529b;
         }
         h2 { color: #00529b; text-align: center; font-size: 1.3rem; margin-top: 0; border-bottom: 2px solid #00529b; padding-bottom: 10px; }
         .input-group { margin-bottom: 15px; }
@@ -34,7 +36,6 @@
             border-radius: 8px; 
             box-sizing: border-box; 
         }
-        /* エラー時の赤枠スタイル */
         .error-border { border: 2px solid #ff4d4d; background-color: #fff0f0; }
 
         button { 
@@ -51,10 +52,27 @@
         }
         .result-box { margin-top: 20px; padding: 15px; background-color: #eef9ee; border: 2px solid #c2e6c2; border-radius: 10px; display: none; }
         .res-value { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin: 10px 0; }
+        
+        /* フッター（注意書き） */
         .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.5; }
+        .warning-box {
+            background-color: #fff3cd; 
+            padding: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #ffeeba; 
+            margin-bottom: 15px;
+            color: #856404;
+        }
+        .warning-list {
+            padding-left: 20px; 
+            margin: 5px 0; 
+        }
+        .warning-list li {
+            margin-bottom: 3px;
+        }
         .highlight { color: #00529b; font-weight: bold; }
         
-        /* ▼新しく追加：全体エラーメッセージのデザイン */
+        /* エラー表示 */
         #globalError {
             color: #d32f2f;
             background-color: #ffe6e6;
@@ -63,7 +81,7 @@
             font-size: 0.9rem;
             text-align: center;
             font-weight: bold;
-            display: none; /* 最初は隠しておく */
+            display: none;
             margin-bottom: 15px;
             border: 1px solid #ffcccc;
         }
@@ -101,6 +119,7 @@
     </div>
     <div class="input-group">
         <label>支給残日数（日）</label>
+        <div style="font-size:0.75rem; color:#666; margin-bottom:3px;">※就職日の<span style="color:#d32f2f; font-weight:bold;">前日時点</span>の日数</div>
         <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric" oninput="checkLimit()">
         <div id="limitErrorMsg" style="color:#d32f2f; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
     </div>
@@ -116,14 +135,26 @@
         <div style="font-size:0.9rem; margin-top:10px;">支給概算額：</div>
         <div class="res-value" id="finalResult">0 円</div>
     </div>
+    
     <div class="footer-note">
+        <div class="warning-box">
+            <strong>【⚠ 計算の前に必ず確認】</strong><br>
+            以下の場合は、計算結果に関わらず<span style="color:#d32f2f; font-weight:bold;">支給対象外（0円）</span>となる可能性があります。
+            <ul class="warning-list">
+                <li><strong>待期期間（7日間）</strong>が経過する前に就職した</li>
+                <li><strong>過去3年以内</strong>に再就職手当を受け取っている</li>
+                <li>新しい仕事が<strong>1年未満の契約</strong>（更新見込み無し）である</li>
+                <li>離職前の会社に再び就職した（出戻り・関連会社含む）</li>
+                <li>(給付制限の方) 最初の1ヶ月間にハローワーク等の紹介以外で就職した</li>
+            </ul>
+        </div>
+        
         【基本手当日額について】<br>
         離職した日の直前6ヶ月間に支払われた賃金の合計を180で割った金額（賃金日額）の約50〜80％（60歳〜64歳は45〜80％）となります。<br><br>
         ※正確な確定額は<span class="highlight">ハローワーク松山</span>が発行する<span class="highlight">「雇用保険受給資格者証」</span>にて通知されます。
     </div>
 </div>
 <script>
-// 入力制限チェック（前回の機能）
 function checkLimit() {
     const total = parseInt(document.getElementById('totalDays').value);
     const remainInput = document.getElementById('remainDays');
@@ -146,28 +177,21 @@ function calculateFinal() {
     const remain = parseFloat(document.getElementById('remainDays').value);
     let daily = parseFloat(document.getElementById('dailyAmount').value);
     
-    // ▼ここを変更：アラートではなく、画面内のメッセージを表示
     const errorBox = document.getElementById('globalError');
     const remainInput = document.getElementById('remainDays');
     const dailyInput = document.getElementById('dailyAmount');
 
-    // いったんエラー表示を消す
     errorBox.style.display = "none";
     remainInput.classList.remove("error-border");
     dailyInput.classList.remove("error-border");
 
-    // 入力が空のとき
     if (!remain || !daily) { 
-        errorBox.style.display = "block"; // 赤い帯を表示
-        
-        // 空の欄を赤枠にする
+        errorBox.style.display = "block"; 
         if(!remain) remainInput.classList.add("error-border");
         if(!daily) dailyInput.classList.add("error-border");
-        
-        return; // ここで処理を止める
+        return; 
     }
     
-    // 入力が正しい場合、以下を実行
     let cap = 0;
     if (age === "under30") cap = 7255;
     else if (age === "30to44") cap = 8055;
