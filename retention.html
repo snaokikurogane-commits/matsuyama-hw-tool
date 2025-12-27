@@ -7,9 +7,7 @@
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
-            /* 背景：目に優しい薄いクリームイエロー */
             background-color: #fffde7; 
-            /* 文字色：黄色と相性の良いダークブラウン */
             color: #3e2723; 
             padding: 10px; 
             margin: 0; 
@@ -25,13 +23,12 @@
             box-shadow: 0 4px 15px rgba(62, 39, 35, 0.1); 
             box-sizing: border-box;
             margin-top: 10px;
-            /* ▼アクセントライン：濃いイエロー（山吹色） */
+            /* アクセントライン：濃いイエロー */
             border-top: 5px solid #fbc02d;
         }
         
-        /* 見出し */
         h2 { 
-            color: #f57f17; /* オレンジに近い黄色 */
+            color: #f57f17; 
             text-align: center; 
             font-size: 1.3rem; 
             margin-top: 0; 
@@ -40,28 +37,35 @@
         }
         
         .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #5d4037; }
+        
+        /* ▼変更点：ラベルを黒（濃いグレー）に変更 */
+        label { 
+            display: block; 
+            font-size: 0.9rem; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            color: #333333; 
+        }
         .sub-label { font-size: 0.75rem; color: #8d6e63; margin-bottom: 5px; display: block; }
         
         input, select { 
             width: 100%; 
             padding: 12px; 
             font-size: 16px; 
-            border: 1px solid #ffe082; /* 枠線を薄い黄色に */
+            border: 1px solid #ffe082; 
             border-radius: 8px; 
             box-sizing: border-box; 
             background-color: #fff;
-            color: #3e2723;
+            color: #333;
         }
-        /* エラー時の赤枠 */
         .error-border { border: 2px solid #ff7043; background-color: #fbe9e7; }
 
+        /* ▼変更点：ボタンを緑色に変更 */
         button { 
             width: 100%; 
             padding: 16px; 
-            /* ボタン：視認性の高いアンバー（琥珀色） */
-            background-color: #ffca28; 
-            color: #3e2723; 
+            background-color: #00b900; 
+            color: white; 
             border: none; 
             border-radius: 8px; 
             font-size: 1.1rem; 
@@ -69,15 +73,14 @@
             cursor: pointer;
             margin-top: 10px;
             transition: background 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        button:active { background-color: #ffb300; }
+        button:active { background-color: #008f00; }
         
-        /* 結果表示エリア */
         .result-box { 
             margin-top: 20px; 
             padding: 15px; 
-            background-color: #fff9c4; /* 少し濃いクリーム色 */
+            background-color: #fff9c4; 
             border: 2px solid #fff176; 
             border-radius: 10px; 
             display: none; 
@@ -87,7 +90,6 @@
         .res-sub { font-size: 1.1rem; font-weight: bold; color: #3e2723; }
         .res-main { font-size: 1.8rem; font-weight: 900; color: #e65100; text-align: center; margin: 15px 0 5px 0; }
         
-        /* フッター（注意書き） */
         .footer-note { font-size: 0.75rem; color: #795548; margin-top: 20px; border-top: 1px solid #fff59d; padding-top: 10px; line-height: 1.5; }
         .warning-box {
             background-color: #fff3cd; 
@@ -97,16 +99,10 @@
             margin-bottom: 15px;
             color: #856404;
         }
-        .warning-list {
-            padding-left: 20px; 
-            margin: 5px 0; 
-        }
-        .warning-list li {
-            margin-bottom: 3px;
-        }
+        .warning-list { padding-left: 20px; margin: 5px 0; }
+        .warning-list li { margin-bottom: 3px; }
         .highlight { color: #f57f17; font-weight: bold; }
         
-        /* 全体エラーメッセージ */
         #globalError {
             color: #d84315;
             background-color: #fbe9e7;
@@ -132,8 +128,8 @@
     
     <div class="input-group">
         <label>① 基本手当日額（離職時）</label>
-        <div class="sub-label">受給資格者証の第1面「19.基本手当日額」</div>
-        <input type="number" id="basicDaily" placeholder="例: 6000" inputmode="numeric">
+        <div class="sub-label">受給資格者証の第1面「19.基本手当日額」<br>※上限: 8,870円 (R7年度推定)</div>
+        <input type="text" id="basicDaily" placeholder="例: 6,000" inputmode="numeric" oninput="formatCurrency(this, 8870)">
     </div>
 
     <div class="input-group">
@@ -163,7 +159,7 @@
     <div class="input-group">
         <label>④ 新しい職場の「6ヶ月間の賃金総額」</label>
         <div class="sub-label">※再就職後6ヶ月間の総支給額（賞与除く）</div>
-        <input type="number" id="newTotalWages" placeholder="例: 1200000" inputmode="numeric">
+        <input type="text" id="newTotalWages" placeholder="例: 1,200,000" inputmode="numeric" oninput="formatCurrency(this)">
     </div>
 
     <div class="input-group">
@@ -213,7 +209,29 @@
 </div>
 
 <script>
-// 入力制限チェック
+// カンマ区切り＆上限チェック関数
+function formatCurrency(input, maxLimit) {
+    let val = input.value.replace(/,/g, "");
+    val = val.replace(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+    val = val.replace(/[^0-9]/g, "");
+    
+    if (val === "") {
+        input.value = "";
+        return;
+    }
+
+    let numVal = Number(val);
+
+    // 上限チェック（指定がある場合）
+    if (maxLimit && numVal > maxLimit) {
+        numVal = maxLimit;
+    }
+
+    input.value = numVal.toLocaleString();
+}
+
 function checkLimit() {
     const total = parseInt(document.getElementById('totalDays').value);
     const remainInput = document.getElementById('remainDays');
@@ -236,15 +254,16 @@ function calcRetention() {
     const newTotalInput = document.getElementById('newTotalWages');
     const newDaysInput = document.getElementById('newWorkDays');
     
-    const basicDaily = parseFloat(basicDailyInput.value);
+    // カンマを除去して数値化
+    const basicDaily = parseFloat(basicDailyInput.value.replace(/,/g, ""));
+    const newTotal = parseFloat(newTotalInput.value.replace(/,/g, ""));
+    
     const totalDays = parseFloat(document.getElementById('totalDays').value);
     const remainDays = parseFloat(remainDaysInput.value);
-    const newTotal = parseFloat(newTotalInput.value);
     const newDays = parseFloat(newDaysInput.value);
     
     const errorBox = document.getElementById('globalError');
     
-    // エラーリセット
     errorBox.style.display = "none";
     [basicDailyInput, remainDaysInput, newTotalInput, newDaysInput].forEach(el => el.classList.remove("error-border"));
 
@@ -260,7 +279,7 @@ function calcRetention() {
     // 1. 新しい賃金日額の算出
     const newDaily = Math.floor(newTotal / newDays);
 
-    // 2. 再就職手当の給付率判定（上限計算用）
+    // 2. 再就職手当の給付率判定
     let rate = 0.6;
     if ((remainDays / totalDays) >= (2/3)) {
         rate = 0.7;
@@ -268,14 +287,11 @@ function calcRetention() {
 
     // 3. 上限額の計算
     // 上限額 = 基本手当日額 × (所定給付日数 - 再就職手当の支給日数)
-    // 支給日数 = 残日数 × 給付率
     const paidDays = Math.floor(remainDays * rate); 
     const limitDays = totalDays - paidDays;
     const limitAmount = Math.floor(basicDaily * limitDays);
 
     // 4. 支給額の計算
-    // 差額 = 離職時賃金日額 - 新しい賃金日額
-    // ※離職時賃金日額の代わりに基本手当日額をベースにする簡易計算
     let diff = basicDaily - newDaily; 
     
     if (diff < 0) diff = 0;
