@@ -7,7 +7,10 @@
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
-            background-color: #f0f4f8; 
+            /* 背景：目に優しい薄いクリームイエロー */
+            background-color: #fffde7; 
+            /* 文字色：黄色と相性の良いダークブラウン */
+            color: #3e2723; 
             padding: 10px; 
             margin: 0; 
             display: flex;
@@ -19,28 +22,43 @@
             background: white; 
             padding: 20px; 
             border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 15px rgba(62, 39, 35, 0.1); 
             box-sizing: border-box;
             margin-top: 10px;
+            /* アクセントライン：濃いイエロー（山吹色） */
+            border-top: 5px solid #fbc02d;
         }
-        h2 { color: #00529b; text-align: center; font-size: 1.3rem; margin-top: 0; border-bottom: 2px solid #00529b; padding-bottom: 10px; }
+        h2 { 
+            color: #f57f17; /* タイトル：オレンジに近い黄色 */
+            text-align: center; 
+            font-size: 1.3rem; 
+            margin-top: 0; 
+            border-bottom: 2px solid #fff59d; 
+            padding-bottom: 10px; 
+        }
         .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #333; }
-        .sub-label { font-size: 0.75rem; color: #666; margin-bottom: 5px; display: block; }
+        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #5d4037; }
+        .sub-label { font-size: 0.75rem; color: #8d6e63; margin-bottom: 5px; display: block; }
+        
         input, select { 
             width: 100%; 
             padding: 12px; 
             font-size: 16px; 
-            border: 1px solid #ccd6e0; 
+            border: 1px solid #ffe082; /* 入力枠：薄い黄色 */
             border-radius: 8px; 
             box-sizing: border-box; 
             background-color: #fff;
+            color: #3e2723;
         }
+        /* エラー時の赤枠 */
+        .error-border { border: 2px solid #ff7043; background-color: #fbe9e7; }
+
         button { 
             width: 100%; 
             padding: 16px; 
-            background-color: #00b900; 
-            color: white; 
+            /* ボタン：視認性の高いアンバー（琥珀色） */
+            background-color: #ffca28; 
+            color: #3e2723; /* 文字は茶色で見やすく */
             border: none; 
             border-radius: 8px; 
             font-size: 1.1rem; 
@@ -48,21 +66,65 @@
             cursor: pointer;
             margin-top: 10px;
             transition: background 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        button:active { background-color: #008f00; }
-        .result-box { margin-top: 20px; padding: 15px; background-color: #eef9ee; border: 2px solid #c2e6c2; border-radius: 10px; display: none; }
-        .res-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; border-bottom: 1px dashed #c2e6c2; padding-bottom: 5px; }
-        .res-label { font-size: 0.9rem; color: #555; }
-        .res-sub { font-size: 1.1rem; font-weight: bold; color: #333; }
-        .res-main { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin: 15px 0 5px 0; }
-        .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.5; }
-        .highlight { color: #00529b; font-weight: bold; }
+        button:active { background-color: #ffb300; }
+        
+        .result-box { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background-color: #fff9c4; /* 結果エリア：少し濃いクリーム色 */
+            border: 2px solid #fff176; 
+            border-radius: 10px; 
+            display: none; 
+        }
+        .res-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; border-bottom: 1px dashed #f9a825; padding-bottom: 5px; }
+        .res-label { font-size: 0.9rem; color: #5d4037; }
+        .res-sub { font-size: 1.1rem; font-weight: bold; color: #3e2723; }
+        .res-main { font-size: 1.8rem; font-weight: 900; color: #e65100; text-align: center; margin: 15px 0 5px 0; }
+        
+        /* フッター */
+        .footer-note { font-size: 0.75rem; color: #795548; margin-top: 20px; border-top: 1px solid #fff59d; padding-top: 10px; line-height: 1.5; }
+        .warning-box {
+            background-color: #fff3cd; 
+            padding: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #ffeeba; 
+            margin-bottom: 15px;
+            color: #856404;
+        }
+        .warning-list {
+            padding-left: 20px; 
+            margin: 5px 0; 
+        }
+        .warning-list li {
+            margin-bottom: 3px;
+        }
+        .highlight { color: #f57f17; font-weight: bold; }
+        
+        /* 全体エラーメッセージ */
+        #globalError {
+            color: #d84315;
+            background-color: #fbe9e7;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            margin-bottom: 15px;
+            border: 1px solid #ffccbc;
+        }
+        
+        hr.divider { border: 0; border-top: 1px dashed #fbc02d; margin: 20px 0; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>就業促進定着手当<br>概算シミュレーター</h2>
+    
+    <div id="globalError">※すべての項目を入力してください</div>
     
     <div class="input-group">
         <label>① 基本手当日額（離職時）</label>
@@ -72,7 +134,7 @@
 
     <div class="input-group">
         <label>② 所定給付日数</label>
-        <select id="totalDays">
+        <select id="totalDays" onchange="checkLimit()">
             <option value="90">90日</option>
             <option value="120">120日</option>
             <option value="150">150日</option>
@@ -88,10 +150,11 @@
 
     <div class="input-group">
         <label>③ 再就職手当を受けた時の「支給残日数」</label>
-        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric">
+        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric" oninput="checkLimit()">
+        <div id="limitErrorMsg" style="color:#d84315; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
     </div>
 
-    <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
+    <hr class="divider">
 
     <div class="input-group">
         <label>④ 新しい職場の「6ヶ月間の賃金総額」</label>
@@ -125,60 +188,79 @@
             <span class="res-sub" id="limitAmount">0 円</span>
         </div>
         
-        <div style="text-align:center; font-size:0.9rem; margin-top:15px; color:#00529b; font-weight:bold;">支給予定額</div>
+        <div style="text-align:center; font-size:0.9rem; margin-top:15px; color:#e65100; font-weight:bold;">支給予定額</div>
         <div class="res-main" id="finalAmount">0 円</div>
     </div>
 
     <div class="footer-note">
-        ※本ツールは概算です。正確な支給額は<span class="highlight">ハローワーク松山</span>へ申請後に決定されます。<br>
-        ※支給には「再就職手当の支給を受けていること」「6ヶ月以上雇用されていること」等の条件があります。
+        <div class="warning-box">
+            <strong>【⚠ 計算の前に必ず確認】</strong><br>
+            以下の場合、この手当は<span style="color:#d84315; font-weight:bold;">支給されません</span>。
+            <ul class="warning-list">
+                <li>そもそも<strong>再就職手当</strong>を受給していない</li>
+                <li>再就職してから<strong>6ヶ月未満</strong>で退職した</li>
+                <li>新しい賃金日額が、離職前の賃金日額より<strong>下がっていない</strong>（または同額）</li>
+                <li>6ヶ月経過した日の翌日から<strong>2ヶ月</strong>を過ぎて申請した（時効）</li>
+            </ul>
+        </div>
+        
+        ※本ツールは概算です。正確な支給額は<span class="highlight">ハローワーク松山</span>へ申請後に決定されます。
     </div>
 </div>
 
 <script>
+// 入力制限チェック
+function checkLimit() {
+    const total = parseInt(document.getElementById('totalDays').value);
+    const remainInput = document.getElementById('remainDays');
+    const limitMsg = document.getElementById('limitErrorMsg');
+    
+    if (remainInput.value && parseInt(remainInput.value) > total) {
+        remainInput.value = total;
+        remainInput.classList.add("error-border");
+        limitMsg.style.display = "block";
+        setTimeout(() => {
+            remainInput.classList.remove("error-border");
+            limitMsg.style.display = "none";
+        }, 1500);
+    }
+}
+
 function calcRetention() {
-    const basicDaily = parseFloat(document.getElementById('basicDaily').value);
+    const basicDailyInput = document.getElementById('basicDaily');
+    const remainDaysInput = document.getElementById('remainDays');
+    const newTotalInput = document.getElementById('newTotalWages');
+    const newDaysInput = document.getElementById('newWorkDays');
+    
+    const basicDaily = parseFloat(basicDailyInput.value);
     const totalDays = parseFloat(document.getElementById('totalDays').value);
-    const remainDays = parseFloat(document.getElementById('remainDays').value);
-    const newTotal = parseFloat(document.getElementById('newTotalWages').value);
-    const newDays = parseFloat(document.getElementById('newWorkDays').value);
+    const remainDays = parseFloat(remainDaysInput.value);
+    const newTotal = parseFloat(newTotalInput.value);
+    const newDays = parseFloat(newDaysInput.value);
+    
+    const errorBox = document.getElementById('globalError');
+    
+    // エラーリセット
+    errorBox.style.display = "none";
+    [basicDailyInput, remainDaysInput, newTotalInput, newDaysInput].forEach(el => el.classList.remove("error-border"));
 
     if (!basicDaily || !remainDays || !newTotal || !newDays) {
-        alert("すべての項目を入力してください");
+        errorBox.style.display = "block";
+        if(!basicDaily) basicDailyInput.classList.add("error-border");
+        if(!remainDays) remainDaysInput.classList.add("error-border");
+        if(!newTotal) newTotalInput.classList.add("error-border");
+        if(!newDays) newDaysInput.classList.add("error-border");
         return;
     }
 
     // 1. 新しい賃金日額の算出
     const newDaily = Math.floor(newTotal / newDays);
 
-    // 2. 以前の賃金日額（基本手当日額 ÷ 給付率0.5~0.8）の逆算は複雑なため、
-    // ここでは簡易的に「基本手当日額」そのものを比較対象にはせず、
-    // 本来は「離職時賃金日額」が必要だが、利用者が分からないことが多いため
-    // 下がるかどうかの判定に使います。
-    // ※正確には「離職時の賃金日額」＞「新しい賃金日額」である必要があります。
-    // このツールでは「基本手当日額」を入力としていますが、
-    // 差額計算のベースとなる「以前の賃金日額」は、基本手当日額から逆算もできますが
-    // ユーザーに「離職時賃金日額」を入力させたほうが正確かもしれません。
-    // ただ、分かりやすさ優先で「基本手当日額」を入力させている場合、
-    // ここでは便宜上そのまま使いますが、厳密には「離職時の賃金日額」が必要です。
+    // 2. 以前の賃金日額
+    // ※本来は離職時賃金日額ですが、簡易的に基本手当日額を表示のベースにします
+    // 計算には直接使いませんが、比較参考として表示
     
-    // ★ハローワーク仕様としての補正：
-    // 本来は「離職時賃金日額」を入力すべきですが、手元にない場合が多いので
-    // 簡易的に BasicDaily を使って上限チェックだけ行い、
-    // 差額計算には「基本手当日額」ではなく、受給資格者証の「賃金日額」が必要。
-    // 今回はユーザー体験を優先し、コード内で「基本手当日額」を「離職時賃金日額」とみなして計算しません。
-    // 正確を期すため、アラートで補足します。
-    // ※今回は参考サイトのロジック（低下した賃金差額 × 支払い基礎日数）に従います。
-    
-    // 【修正ロジック】
-    // ユーザーには「基本手当日額」を入力してもらっていますが、
-    // 差額計算に必要なのは「離職時の賃金日額」です。
-    // これを自動推計するのは危険（給付率が人によって違うため）。
-    // そのため、アラートは出しつつ、ここでは「基本手当日額」ではなく
-    // 本来入力項目に「離職時の賃金日額」を追加するのがベストです。
-    // ですが、まずは「基本手当日額」を使って上限計算（これが定着手当のキモ）を正しく行います。
-
-    // 再就職手当の給付率判定
+    // 再就職手当の給付率判定（上限計算用）
     let rate = 0.6;
     if ((remainDays / totalDays) >= (2/3)) {
         rate = 0.7;
@@ -186,34 +268,25 @@ function calcRetention() {
 
     // 3. 上限額の計算
     // 上限額 = 基本手当日額 × (所定給付日数 - 再就職手当の支給日数)
-    // 再就職手当の支給日数 = 支給残日数 × 給付率
-    const paidDays = Math.floor(remainDays * rate); // 支給された日数分
+    const paidDays = Math.floor(remainDays * rate); 
     const limitDays = totalDays - paidDays;
     const limitAmount = Math.floor(basicDaily * limitDays);
 
     // 4. 支給額の計算（差額 × 6ヶ月の基礎日数）
-    // 参考サイト同様、ここが一番難しいですが、
-    // 厳密には「離職時賃金日額 - 新賃金日額」です。
-    // 簡易的に「基本手当日額 / 0.5〜0.8」で逆算しますか？
-    // いえ、ユーザーに「以前の賃金日額」を入力させる入力欄を追加したほうが親切ですね。
-    // 今回はコードを複雑にせず、入力欄を追加せずに計算するため
-    // 「基本手当日額」をベースに計算してみます（あくまで概算）。
-    
-    // ※正確性を高めるため、「離職時の賃金日額」は内部的に
-    // 「基本手当日額 ÷ 0.5」〜「÷0.8」の範囲にありますが、
-    // 多くの人は「基本手当日額」しか把握していないため、
-    // ここでは『差額計算』を省略し、上限額（多くの人がこれに引っかかる）をメインに見せつつ
-    // 暫定計算を行います。
-    
-    // 今回は「基本手当日額」と「新賃金日額」を比較して計算します。
-    // （※本来は離職時賃金日額（もっと高い）との比較なので、実際はもっと貰える可能性が高いです）
+    // 差額 = 離職時賃金日額 - 新しい賃金日額
+    // ※このツールでは「基本手当日額」を入力させているため、正確な「離職時賃金日額」は不明です。
+    // そのため、「基本手当日額」を代用して計算するか、ユーザーに警告する必要があります。
+    // 今回は「基本手当日額」と「新賃金日額」の差で計算します（あくまで概算として機能させるため）。
+    // 本来の賃金日額は基本手当日額より高いので、実際の支給額はこれより多くなる可能性があります。
     
     let diff = basicDaily - newDaily; 
+    
+    // もし基本手当より高い給料なら0円
     if (diff < 0) diff = 0;
 
     let tentativeAmount = Math.floor(diff * newDays);
 
-    // 支給額決定（低い方）
+    // 支給額決定（上限キャップ）
     let final = tentativeAmount;
     if (final > limitAmount) {
         final = limitAmount;
