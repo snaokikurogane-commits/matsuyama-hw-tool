@@ -7,9 +7,9 @@
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
-            /* 背景：ほんのり赤みのある白（スノーホワイト） */
+            /* 背景：ほんのり温かみのあるスノーホワイト */
             background-color: #fffafa; 
-            /* 文字色：真っ黒ではなく濃いグレーで柔らかく */
+            /* 文字色：黒に近いダークグレー */
             color: #424242; 
             padding: 10px; 
             margin: 0; 
@@ -22,19 +22,20 @@
             background: white; 
             padding: 20px; 
             border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.1); 
+            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.1); 
             box-sizing: border-box;
             margin-top: 10px;
-            /* カード上部：落ち着いたボルドー（深紅） */
-            border-top: 5px solid #a52a2a; 
+            /* ▼アクセントライン：ボルドー（深紅） */
+            border-top: 5px solid #800000;
         }
+        
         /* 見出し */
         h2 { 
-            color: #800000; /* マルーン（栗色・暗い赤） */
+            color: #800000; 
             text-align: center; 
             font-size: 1.3rem; 
             margin-top: 0; 
-            border-bottom: 2px solid #ef9a9a; /* 薄い赤の下線 */
+            border-bottom: 2px solid #ef9a9a; 
             padding-bottom: 10px; 
         }
         .input-group { margin-bottom: 15px; }
@@ -56,7 +57,7 @@
         button { 
             width: 100%; 
             padding: 16px; 
-            /* ボタン：落ち着いた赤（彩度を抑えた赤） */
+            /* ボタン：少し落ち着いた赤 */
             background-color: #c62828; 
             color: white; 
             border: none; 
@@ -70,7 +71,7 @@
         }
         button:active { background-color: #b71c1c; }
         
-        /* 結果表示エリア：薄いピンクベージュ */
+        /* 結果表示エリア */
         .result-box { 
             margin-top: 20px; 
             padding: 15px; 
@@ -87,7 +88,7 @@
         /* フッター（注意書き） */
         .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #ffcdd2; padding-top: 10px; line-height: 1.5; }
         .warning-box {
-            background-color: #fff3e0; /* 注意書きは少しオレンジ寄りで区別 */
+            background-color: #fff3e0; 
             padding: 12px; 
             border-radius: 6px; 
             border: 1px solid #ffe0b2; 
@@ -192,3 +193,109 @@
                 <li>受給中に<strong>アルバイト等</strong>をした場合、減額または不支給となる日があります</li>
             </ul>
         </div>
+
+        ※<span class="highlight">ハローワーク松山</span>仕様（令和7年度基準推定）<br>
+        ※この計算は概算です。正確な受給額・日数は、離職票提出後に決定される<span class="highlight">「雇用保険受給資格者証」</span>をご確認ください。
+    </div>
+</div>
+
+<script>
+function calcBenefit() {
+    const ageRange = document.getElementById('age').value;
+    const period = parseInt(document.getElementById('period').value);
+    const reason = document.getElementById('reason').value;
+    const totalSalaryInput = document.getElementById('totalSalary');
+    const totalSalary = parseFloat(totalSalaryInput.value);
+
+    // エラー表示リセット
+    const errorBox = document.getElementById('globalError');
+    errorBox.style.display = "none";
+    totalSalaryInput.classList.remove("error-border");
+
+    if (!totalSalary) { 
+        errorBox.style.display = "block"; // 赤い帯を表示
+        totalSalaryInput.classList.add("error-border"); // 赤枠
+        return; 
+    }
+
+    // 1. 賃金日額の算出（6ヶ月総額 ÷ 180）
+    let w = Math.floor(totalSalary / 180);
+
+    // --- 賃金日額の上限・下限判定（令和7年度推定値） ---
+    if (w < 2940) w = 2940;
+    
+    let maxW = 0;
+    if (ageRange === "29") maxW = 14380;
+    else if (ageRange === "30") maxW = 15990; 
+    else if (ageRange === "35") maxW = 15990;
+    else if (ageRange === "45") maxW = 17620;
+    else if (ageRange === "60") maxW = 16750;
+
+    if (w > maxW) w = maxW;
+    document.getElementById('wageDaily').innerText = w.toLocaleString() + " 円";
+
+    // 2. 基本手当日額の算出（給付率計算）
+    let rate = 0; 
+    let basic = 0;
+
+    if (ageRange === "60") {
+        if (w <= 5330) rate = 0.8;
+        else if (w <= 11670) rate = 0.8 - ((0.35 * (w - 5330)) / (11670 - 5330));
+        else rate = 0.45;
+    } else {
+        if (w <= 5330) rate = 0.8;
+        else if (w <= 13010) rate = 0.8 - ((0.3 * (w - 5330)) / (13010 - 5330));
+        else rate = 0.5;
+    }
+    
+    basic = Math.floor(w * rate);
+    
+    let maxBasic = 0;
+    if (ageRange === "29") maxBasic = 7255;
+    else if (ageRange === "30") maxBasic = 8055;
+    else if (ageRange === "35") maxBasic = 8055;
+    else if (ageRange === "45") maxBasic = 8870;
+    else if (ageRange === "60") maxBasic = 7623;
+
+    if (basic > maxBasic) basic = maxBasic;
+    document.getElementById('basicDaily').innerText = basic.toLocaleString() + " 円";
+
+    // 3. 所定給付日数の判定
+    let d = 90; 
+    if (reason === "jiko") {
+        if (period >= 20) d = 150;
+        else if (period >= 10) d = 120;
+        else d = 90; 
+    } else {
+        if (ageRange === "29") {
+            if (period >= 5) d = 120;
+            else if (period >= 1) d = 90;
+            else d = 90;
+        } else if (ageRange === "30" || ageRange === "35") { 
+            if (period >= 20) d = 270;
+            else if (period >= 10) d = 240;
+            else if (period >= 5) d = 180;
+            else if (period >= 1) d = 90;
+        } else if (ageRange === "45") { 
+            if (period >= 20) d = 330;
+            else if (period >= 10) d = 270;
+            else if (period >= 5) d = 240;
+            else if (period >= 1) d = 180;
+        } else if (ageRange === "60") { 
+            if (period >= 20) d = 240;
+            else if (period >= 10) d = 210;
+            else if (period >= 5) d = 180;
+            else if (period >= 1) d = 150;
+        }
+    }
+    
+    document.getElementById('days').innerText = d;
+
+    // 4. 受給総額
+    const total = basic * d;
+    document.getElementById('totalBenefit').innerText = total.toLocaleString() + " 円";
+    document.getElementById('resultArea').style.display = "block";
+}
+</script>
+</body>
+</html>
