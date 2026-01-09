@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>松山市エリア検索 | ハローワーク公式LINE</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f7f8; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #005bac; font-size: 1.2rem; }
+        p { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+        .keyword-box { background: #eee; padding: 10px; border-radius: 6px; font-size: 0.8rem; word-break: break-all; margin-bottom: 20px; border: 1px solid #ccc; }
+        .btn { display: block; background: #005bac; color: white; padding: 15px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; border: none; width: 100%; }
+        .btn-copy { background: #28a745; margin-bottom: 10px; }
+        .footer-note { font-size: 0.7rem; color: #999; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 id="area-title">エリアを読み込み中...</h2>
+    <p>下のボタンを押すとキーワードがコピーされ、検索画面が開きます。<br><strong>「フリーワード」欄に貼り付けて検索してください。</strong></p>
+    
+    <div id="keyword-display" class="keyword-box">キーワードを読み込み中...</div>
+
+    <button id="copy-btn" class="btn btn-copy">① キーワードをコピーする</button>
+    <button id="search-btn" class="btn">② ハローワーク検索を開く</button>
+</div>
+
+<p class="footer-note">※ハローワーク公式サイトの仕様により、<br>貼り付け操作が必要になる場合があります。</p>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+    // エリアごとの全角キーワード定義
+    const areaData = {
+        "east": { title: "中心部東エリア", keywords: "番町　東雲　八坂　素鵞　桑原　道後　一番町　二番町　三番町　大街道　千舟町　湊町　花園町　持田町　平和通　道後　湯之町　石手" },
+        "west": { title: "中心部西エリア", keywords: "新玉　雄郡　味酒　清水　大手町　南江戸　竹原　小栗　土居田　宮西　萱町　本町　清水町　山越　衣山" },
+        "north": { title: "城北エリア", keywords: "潮見　久枝　和気　堀江　吉藤　谷町　平田町　久万ノ台　問屋町　西長戸　東長戸　和気町　太山寺町　堀江町" },
+        "south": { title: "城南エリア", keywords: "石井　浮穴　荏原　坂本　東石井　西石井　居相　古川　はなみずき　和泉　今在家　北土居　天山　森松町" },
+        "joto": { title: "城東エリア", keywords: "湯山　日浦　五明　伊台　小野　久米　平井町　鷹子町　来住町　北久米町　南久米町　福音寺町　梅本町　湯の山" },
+        "josai": { title: "城西エリア", keywords: "三津浜　宮前　高浜　味生　生石　垣生　余土　三津　住吉　高浜町　北吉田町　南吉田町　空港通　斎院町　余戸　保免" },
+        "hojo": { title: "北条エリア", keywords: "浅海　立岩　難波　正岡　北条　河野　粟井　北条辻　土手内　柳原　中西　下難波　上難波　光洋台" },
+        "island": { title: "忽那諸島", keywords: "泊　由良　睦野　東中島　西中島　神和　由良町　泊町　睦月　中島大浦　津和地　怒和" }
+    };
+
+    // URLパラメータからエリアを取得 (例: ?area=south)
+    const urlParams = new URLSearchParams(window.location.search);
+    const areaKey = urlParams.get('area') || 'east';
+    const data = areaData[areaKey];
+
+    // 表示の更新
+    document.getElementById('area-title').innerText = data.title;
+    document.getElementById('keyword-display').innerText = data.keywords;
+
+    // コピー機能
+    document.getElementById('copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(data.keywords).then(() => {
+            alert("キーワードをコピーしました！");
+        });
+    });
+
+    // 検索サイトへ遷移
+    document.getElementById('search-btn').addEventListener('click', () => {
+        // ハローワークの検索条件入力画面へ
+        window.location.href = "https://www.hellowork.mhlw.go.jp/kensaku/GECA110010.do";
+    });
+
+    // LIFF初期化
+    liff.init({ liffId: "YOUR_LIFF_ID" }).then(() => {
+        if (!liff.isLoggedIn()) { liff.login(); }
+    });
+</script>
+
+</body>
+</html>
