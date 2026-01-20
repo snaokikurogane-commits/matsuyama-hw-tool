@@ -2,322 +2,206 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基本手当計算ツール</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>基本手当 目安額チェック</title>
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
-            background-color: #fffafa; 
-            color: #424242; 
-            padding: 10px; 
-            margin: 0; 
-            display: flex;
-            justify-content: center;
+            background-color: #f0f4f8; 
+            padding: 10px; margin: 0; display: flex; justify-content: center;
         }
         .card { 
-            width: 100%; 
-            max-width: 480px; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(128, 0, 0, 0.1); 
-            box-sizing: border-box;
-            margin-top: 10px;
-            /* アクセントラインはボルドーのまま */
-            border-top: 5px solid #800000;
+            width: 100%; max-width: 480px; background: white; padding: 20px; 
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            box-sizing: border-box; margin-top: 10px;
+            /* ヘッダーアクセント色を赤に変更 */
+            border-top: 5px solid #d32f2f;
         }
-        
         h2 { 
-            color: #800000; 
-            text-align: center; 
-            font-size: 1.3rem; 
-            margin-top: 0; 
-            border-bottom: 2px solid #ef9a9a; 
-            padding-bottom: 10px; 
+            /* タイトル文字色と下線を赤に変更 */
+            color: #d32f2f; text-align: center; font-size: 1.3rem; 
+            margin-top: 0; border-bottom: 2px solid #d32f2f; padding-bottom: 10px; 
         }
-        .input-group { margin-bottom: 15px; }
-        
-        /* ▼変更点：ラベルの文字色を黒（濃いグレー）に変更 */
-        label { 
-            display: block; 
-            font-size: 0.9rem; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            color: #333333; 
-        }
-        
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .sub-text { font-size: 0.75rem; color: #666; margin-bottom: 5px; }
         input, select { 
-            width: 100%; 
-            padding: 12px; 
-            font-size: 16px; 
-            border: 1px solid #e57373; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            background-color: #fff;
-            color: #333;
+            width: 100%; padding: 12px; font-size: 16px; 
+            border: 1px solid #ccd6e0; border-radius: 8px; box-sizing: border-box; color: #333;
         }
-        .error-border { border: 2px solid #d32f2f; background-color: #ffebee; }
+        
+        /* 同意エリア */
+        .agreement-box {
+            background-color: #f9f9f9; padding: 15px; border-radius: 8px;
+            border: 1px solid #ddd; margin-bottom: 15px;
+        }
+        .checkbox-label {
+            display: flex; align-items: start; cursor: pointer; font-size: 0.9rem; font-weight: bold;
+        }
+        .checkbox-label input {
+            width: 20px; height: 20px; margin-right: 10px; margin-top: 2px; flex-shrink: 0;
+        }
 
-        /* ▼変更点：ボタンの背景を緑に変更 */
+        /* ボタン（無効時はグレー） */
         button { 
-            width: 100%; 
-            padding: 16px; 
-            background-color: #00b900; /* LINEのような鮮やかな緑 */
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: 100%; padding: 16px; 
+            background-color: #ccc; 
+            color: white; border: none; border-radius: 8px; 
+            font-size: 1.1rem; font-weight: bold; cursor: not-allowed;
+            transition: background 0.3s;
         }
-        button:active { background-color: #008f00; } /* 押した時は濃い緑 */
-        
+        /* 有効化時のスタイル（ここは共通で緑のまま） */
+        button.active {
+            background-color: #00b900; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button.active:active { background-color: #008f00; }
+
+        /* 結果エリア */
         .result-box { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background-color: #ffebee; 
-            border: 2px solid #ffcdd2; 
-            border-radius: 10px; 
-            display: none; 
+            margin-top: 20px; padding: 15px; background-color: #eef9ee; 
+            border: 2px solid #c2e6c2; border-radius: 10px; display: none; 
         }
-        .res-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; border-bottom: 1px dashed #e57373; padding-bottom: 5px; }
-        .res-label { font-size: 0.9rem; color: #5d4037; }
-        .res-sub { font-size: 1.1rem; font-weight: bold; color: #3e2723; }
-        .res-main { font-size: 1.8rem; font-weight: 900; color: #b71c1c; text-align: center; margin: 15px 0 5px 0; }
+        .res-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; border-bottom: 1px dashed #c2e6c2; padding-bottom: 5px;}
+        .res-val { font-weight: bold; color: #333; }
+        .final-amount { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin-top: 5px; }
         
-        .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #ffcdd2; padding-top: 10px; line-height: 1.5; }
-        .warning-box {
-            background-color: #fff3e0; 
-            padding: 12px; 
-            border-radius: 6px; 
-            border: 1px solid #ffe0b2; 
-            margin-bottom: 15px;
-            color: #bf360c;
+        /* フッター注釈 */
+        .footer-note { 
+            font-size: 0.75rem; color: #666; margin-top: 20px; 
+            border-top: 1px solid #eee; padding-top: 15px; line-height: 1.6;
         }
-        .warning-list { padding-left: 20px; margin: 5px 0; }
-        .warning-list li { margin-bottom: 3px; }
-        .highlight { color: #b71c1c; font-weight: bold; }
-        
-        #globalError {
-            color: #b71c1c;
-            background-color: #ffcdd2;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-            margin-bottom: 15px;
-            border: 1px solid #ef9a9a;
+        .disclaimer {
+            background-color: #fff0f0; padding: 10px; border-radius: 6px;
+            color: #d32f2f; margin-top: 10px; font-weight: bold; border: 1px solid #ffcccc;
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>基本手当計算ツール</h2>
-    
-    <div id="globalError">※内容を確認してください</div>
+    <h2>失業給付 目安チェック</h2>
+
+    <div class="input-group">
+        <label>離職前6ヶ月間の給与総額</label>
+        <div class="sub-text">※ボーナスを除く総支給額（残業代含む）</div>
+        <input type="tel" id="totalWage" placeholder="例: 1800000" maxlength="8" oninput="formatWage(this)">
+    </div>
 
     <div class="input-group">
         <label>離職時の年齢</label>
-        <select id="age">
-            <option value="29">29歳以下</option>
-            <option value="30">30歳〜34歳</option>
-            <option value="35">35歳〜44歳</option>
-            <option value="45">45歳〜59歳</option>
-            <option value="60">60歳〜64歳</option>
+        <select id="ageGroup">
+            <option value="under30">30歳未満</option>
+            <option value="30to44" selected>30歳〜44歳</option>
+            <option value="45to59">45歳〜59歳</option>
+            <option value="60to64">60歳〜64歳</option>
         </select>
     </div>
 
     <div class="input-group">
-        <label>被保険者期間（勤続年数）</label>
-        <select id="period">
-            <option value="0">1年未満（6ヶ月以上）</option>
-            <option value="1">1年以上 5年未満</option>
-            <option value="5">5年以上 10年未満</option>
-            <option value="10">10年以上 20年未満</option>
-            <option value="20">20年以上</option>
+        <label>給付日数（予定）</label>
+        <select id="totalDays">
+            <option value="90">90日</option><option value="120">120日</option><option value="150">150日</option>
+            <option value="180">180日</option><option value="210">210日</option><option value="240">240日</option>
+            <option value="270">270日</option><option value="300">300日</option><option value="330">330日</option><option value="360">360日</option>
         </select>
     </div>
 
-    <div class="input-group">
-        <label>離職理由</label>
-        <select id="reason">
-            <option value="jiko">自己都合（一般）</option>
-            <option value="kaisha">会社都合（特定・重責）</option>
-        </select>
+    <div class="agreement-box">
+        <label class="checkbox-label">
+            <input type="checkbox" id="agreeCheck" onchange="toggleButton()">
+            <span>この結果はあくまで目安であり、実際の決定額や支給を保証するものではないことに同意します。</span>
+        </label>
     </div>
 
-    <div class="input-group">
-        <label>離職前6ヶ月の賃金総額（円）</label>
-        <input type="text" id="totalSalary" placeholder="例: 1,800,000" inputmode="numeric" oninput="formatCurrency(this)">
-        <div style="font-size:0.75rem; color:#800000; margin-top:4px;">※ボーナスは含みません。残業代・交通費等は含みます。</div>
-    </div>
-
-    <button onclick="calcBenefit()">計算を実行</button>
+    <button id="calcBtn" onclick="runCalculation()" disabled>同意してチェックする</button>
 
     <div id="resultArea" class="result-box">
-        <div class="res-row">
-            <span class="res-label">賃金日額</span>
-            <span class="res-sub" id="wageDaily">0 円</span>
-        </div>
-        <div class="res-row">
-            <span class="res-label">基本手当日額</span>
-            <span class="res-sub" id="basicDaily">0 円</span>
-        </div>
-        <div class="res-row">
-            <span class="res-label">所定給付日数</span>
-            <span class="res-sub"><span id="days">0</span> 日</span>
-        </div>
+        <div class="res-row"><span>基本手当日額（1日分）</span> <span id="resBenefitDaily" class="res-val"></span></div>
         
-        <div style="text-align:center; font-size:0.9rem; margin-top:15px; color:#b71c1c; font-weight:bold;">受給総額（概算）</div>
-        <div class="res-main" id="totalBenefit">0 円</div>
+        <div style="text-align:center; font-size:0.9rem; margin-top:15px; color:#d32f2f; font-weight:bold;">給付総額の目安</div>
+        <div class="final-amount" id="resFinal">0 円</div>
+        <div style="font-size:0.8rem; text-align:right; color:#666; margin-top:5px;">※端数切り捨て処理済み</div>
     </div>
 
     <div class="footer-note">
-        <div class="warning-box">
-            <strong>【⚠ 計算の前に必ず確認】</strong><br>
-            金額が表示されても、以下の方は<span style="color:#d32f2f; font-weight:bold;">すぐには受給できない</span>場合があります。
-            <ul class="warning-list">
-                <li><strong>待期期間（7日間）</strong>は、いかなる場合も支給されません</li>
-                <li><strong>自己都合退職</strong>の場合、さらに2ヶ月〜3ヶ月の給付制限期間がある場合があります</li>
-                <li><strong>認定日</strong>に来所しない場合、その期間分は支給されません</li>
-                <li>受給中に<strong>アルバイト等</strong>をした場合、減額または不支給となる日があります</li>
-            </ul>
+        <div style="font-weight:bold; color:#d32f2f; margin-bottom:5px;">※ハローワーク松山仕様（令和７年度基準）</div>
+        
+        ※正確な受給額・日数は離職票提出後に決定される「雇用保険受給資格者証」を必ずご確認ください。
+        
+        <div class="disclaimer">
+            【免責事項】<br>
+            本ツールによる計算結果は概算シミュレーションであり、実際の支給額とは異なります。<br>
+            本ツールの利用によって生じたいかなる不利益やトラブルについても、当所は一切の責任を負いかねますのでご了承ください。
         </div>
-
-        ※<span class="highlight">ハローワーク松山</span>仕様（令和7年度基準推定）<br>
-        ※この計算は概算です。正確な受給額・日数は、離職票提出後に決定される<span class="highlight">「雇用保険受給資格者証」</span>をご確認ください。
     </div>
 </div>
 
 <script>
-// カンマ区切りのフォーマット関数
-function formatCurrency(input) {
-    let val = input.value.replace(/,/g, "");
-    val = val.replace(/[０-９]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    });
-    val = val.replace(/[^0-9]/g, "");
-    
-    if (val === "") {
-        input.value = "";
-        return;
-    }
-    input.value = Number(val).toLocaleString();
+// カンマ区切りフォーマット
+function formatWage(input) {
+    let val = input.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[^0-9]/g, "");
+    if(val === "") { input.value = ""; return; }
+    input.value = parseInt(val).toLocaleString();
 }
 
-function calcBenefit() {
-    const ageRange = document.getElementById('age').value;
-    const period = parseInt(document.getElementById('period').value);
-    const reason = document.getElementById('reason').value;
-    const totalSalaryInput = document.getElementById('totalSalary');
-    
-    const totalSalary = parseFloat(totalSalaryInput.value.replace(/,/g, ""));
-
-    const errorBox = document.getElementById('globalError');
-    const resultArea = document.getElementById('resultArea');
-    errorBox.style.display = "none";
-    resultArea.style.display = "none";
-    totalSalaryInput.classList.remove("error-border");
-
-    // バリデーション
-    if (!totalSalary) { 
-        errorBox.innerText = "※賃金総額を入力してください";
-        errorBox.style.display = "block"; 
-        totalSalaryInput.classList.add("error-border"); 
-        return; 
-    }
-
-    // 1年未満のロジック厳格化
-    if (period === 0) { // 1年未満
-        if (reason === "jiko") {
-            errorBox.innerText = "※自己都合退職の場合、1年未満の被保険者期間では受給資格がありません。";
-            errorBox.style.display = "block";
-            return;
-        }
-    }
-
-    // 1. 賃金日額の算出
-    let w = Math.floor(totalSalary / 180);
-
-    if (w < 2940) w = 2940;
-    
-    let maxW = 0;
-    if (ageRange === "29") maxW = 14380;
-    else if (ageRange === "30") maxW = 15990; 
-    else if (ageRange === "35") maxW = 15990;
-    else if (ageRange === "45") maxW = 17620;
-    else if (ageRange === "60") maxW = 16750;
-
-    if (w > maxW) w = maxW;
-    document.getElementById('wageDaily').innerText = w.toLocaleString() + " 円";
-
-    // 2. 基本手当日額の算出
-    let rate = 0; 
-    let basic = 0;
-
-    if (ageRange === "60") {
-        if (w <= 5330) rate = 0.8;
-        else if (w <= 11670) rate = 0.8 - ((0.35 * (w - 5330)) / (11670 - 5330));
-        else rate = 0.45;
+// ボタン有効化切り替え
+function toggleButton() {
+    const checkbox = document.getElementById('agreeCheck');
+    const btn = document.getElementById('calcBtn');
+    if (checkbox.checked) {
+        btn.disabled = false; btn.classList.add("active");
     } else {
-        if (w <= 5330) rate = 0.8;
-        else if (w <= 13010) rate = 0.8 - ((0.3 * (w - 5330)) / (13010 - 5330));
-        else rate = 0.5;
+        btn.disabled = true; btn.classList.remove("active");
     }
-    
-    basic = Math.floor(w * rate);
-    
-    let maxBasic = 0;
-    if (ageRange === "29") maxBasic = 7255;
-    else if (ageRange === "30") maxBasic = 8055;
-    else if (ageRange === "35") maxBasic = 8055;
-    else if (ageRange === "45") maxBasic = 8870;
-    else if (ageRange === "60") maxBasic = 7623;
+}
 
-    if (basic > maxBasic) basic = maxBasic;
-    document.getElementById('basicDaily').innerText = basic.toLocaleString() + " 円";
+function runCalculation() {
+    const totalWageInput = document.getElementById('totalWage').value.replace(/,/g, "");
+    const totalWage = parseFloat(totalWageInput);
+    const age = document.getElementById('ageGroup').value;
+    const totalDays = parseInt(document.getElementById('totalDays').value);
 
-    // 3. 所定給付日数の判定
-    let d = 90; 
-    if (reason === "jiko") {
-        if (period >= 20) d = 150;
-        else if (period >= 10) d = 120;
-        else d = 90; 
+    if (!totalWage) { alert("給与総額を入力してください"); return; }
+
+    // 1. 賃金日額
+    const wageDaily = totalWage / 180;
+
+    // 2. 基本手当日額 (R7スライド制)
+    const wLow = 2730; const wHigh = 12760;
+    let benefitDaily = 0;
+
+    if (age !== "60to64") {
+        if (wageDaily < wLow) benefitDaily = wageDaily * 0.8;
+        else if (wageDaily <= wHigh) benefitDaily = 0.8 * wageDaily - ((0.3 * (wageDaily - wLow) / (wHigh - wLow)) * wageDaily);
+        else benefitDaily = wageDaily * 0.5;
     } else {
-        if (ageRange === "29") {
-            if (period >= 5) d = 120;
-            else if (period >= 1) d = 90;
-            else d = 90;
-        } else if (ageRange === "30" || ageRange === "35") { 
-            if (period >= 20) d = 270;
-            else if (period >= 10) d = 240;
-            else if (period >= 5) d = 180;
-            else if (period >= 1) d = 90;
-        } else if (ageRange === "45") { 
-            if (period >= 20) d = 330;
-            else if (period >= 10) d = 270;
-            else if (period >= 5) d = 240;
-            else if (period >= 1) d = 180;
-        } else if (ageRange === "60") { 
-            if (period >= 20) d = 240;
-            else if (period >= 10) d = 210;
-            else if (period >= 5) d = 180;
-            else if (period >= 1) d = 150;
-        }
+        if (wageDaily < wLow) benefitDaily = wageDaily * 0.8;
+        else if (wageDaily <= wHigh) benefitDaily = 0.8 * wageDaily - ((0.35 * (wageDaily - wLow) / (wHigh - wLow)) * wageDaily);
+        else benefitDaily = wageDaily * 0.45;
     }
-    
-    document.getElementById('days').innerText = d;
 
-    // 4. 受給総額
-    const total = basic * d;
-    document.getElementById('totalBenefit').innerText = total.toLocaleString() + " 円";
-    resultArea.style.display = "block";
+    // 3. 上限適用
+    let cap = 0;
+    if (age === "under30") cap = 7255;
+    else if (age === "30to44") cap = 8055;
+    else if (age === "45to59") cap = 8870;
+    else if (age === "60to64") cap = 7623;
+    
+    if (benefitDaily > cap) benefitDaily = cap;
+
+    // 【対策】金額の「丸め」処理
+    // 日額は100円未満切り捨て（例：5,832円 → 5,800円）
+    const safeBenefitDaily = Math.floor(benefitDaily / 100) * 100;
+    
+    // 総額は1,000円未満切り捨て
+    const totalAmount = safeBenefitDaily * totalDays;
+    const safeTotalAmount = Math.floor(totalAmount / 1000) * 1000;
+
+    // 表示（「約」をつける）
+    document.getElementById('resBenefitDaily').innerText = "約 " + safeBenefitDaily.toLocaleString() + " 円";
+    document.getElementById('resFinal').innerText = "約 " + safeTotalAmount.toLocaleString() + " 円";
+    
+    document.getElementById('resultArea').style.display = "block";
 }
 </script>
 </body>
