@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>再就職手当 目安チェック</title>
+    <title>再就職手当 目安額チェック</title>
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
@@ -13,7 +13,9 @@
         .card { 
             width: 100%; max-width: 480px; background: white; padding: 20px; 
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            box-sizing: border-box; margin-top: 10px; border-top: 5px solid #00529b;
+            box-sizing: border-box; margin-top: 10px; 
+            /* 再就職手当は青色のまま */
+            border-top: 5px solid #00529b;
         }
         h2 { 
             color: #00529b; text-align: center; font-size: 1.3rem; 
@@ -65,6 +67,12 @@
             border-top: 1px solid #eee; padding-top: 15px; line-height: 1.6; 
         }
         .highlight { color: #00529b; font-weight: bold; }
+        
+        /* 免責事項のスタイル（基本手当ツールと同様） */
+        .disclaimer {
+            background-color: #fff0f0; padding: 10px; border-radius: 6px;
+            color: #d32f2f; margin-top: 15px; font-weight: bold; border: 1px solid #ffcccc;
+        }
         
         #globalError { color: #d32f2f; background: #ffe6e6; padding: 10px; border-radius: 6px; display: none; margin-bottom: 15px; text-align: center; font-weight: bold; }
         .error-border { border: 2px solid #ff4d4d; background-color: #fff0f0; }
@@ -127,6 +135,12 @@
         <strong>【基本手当日額について】</strong><br>
         離職した日の直前6ヶ月間に支払われた賃金の合計を180で割った金額（賃金日額）の約50〜80％（60歳〜64歳は45〜80％）となります。<br><br>
         ※正確な確定額は<span class="highlight">ハローワーク松山</span>が発行する「雇用保険受給資格者証」にて通知されます。
+        
+        <div class="disclaimer">
+            【免責事項】<br>
+            本ツールによる計算結果は概算シミュレーションであり、実際の支給額とは異なります。<br>
+            本ツールの利用によって生じたいかなる不利益やトラブルについても、当所は一切の責任を負いかねますのでご了承ください。
+        </div>
     </div>
 </div>
 
