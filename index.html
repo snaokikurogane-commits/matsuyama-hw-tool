@@ -2,121 +2,82 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>再就職手当 計算ツール</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>再就職手当 目安チェック</title>
     <style>
         body { 
             font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
             background-color: #f0f4f8; 
-            padding: 10px; 
-            margin: 0; 
-            display: flex;
-            justify-content: center;
+            padding: 10px; margin: 0; display: flex; justify-content: center;
         }
         .card { 
-            width: 100%; 
-            max-width: 480px; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            box-sizing: border-box;
-            margin-top: 10px;
-            /* アクセントライン：青 */
-            border-top: 5px solid #00529b;
+            width: 100%; max-width: 480px; background: white; padding: 20px; 
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            box-sizing: border-box; margin-top: 10px; border-top: 5px solid #00529b;
         }
         h2 { 
-            color: #00529b; 
-            text-align: center; 
-            font-size: 1.3rem; 
-            margin-top: 0; 
-            border-bottom: 2px solid #00529b; 
-            padding-bottom: 10px; 
+            color: #00529b; text-align: center; font-size: 1.3rem; 
+            margin-top: 0; border-bottom: 2px solid #00529b; padding-bottom: 10px; 
         }
         .input-group { margin-bottom: 15px; }
-        
-        /* ラベルは見やすく黒（濃いグレー）に統一 */
-        label { 
-            display: block; 
-            font-size: 0.9rem; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            color: #333333;
-        }
-        
+        label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .sub-label { font-size: 0.75rem; color: #666; margin-bottom: 5px; display: block; }
         input, select { 
-            width: 100%; 
-            padding: 12px; 
-            font-size: 16px; 
-            border: 1px solid #ccd6e0; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            color: #333;
+            width: 100%; padding: 12px; font-size: 16px; 
+            border: 1px solid #ccd6e0; border-radius: 8px; box-sizing: border-box; color: #333;
         }
-        .error-border { border: 2px solid #ff4d4d; background-color: #fff0f0; }
+        
+        /* 同意エリアのスタイル */
+        .agreement-box {
+            background-color: #f9f9f9; padding: 15px; border-radius: 8px;
+            border: 1px solid #ddd; margin-bottom: 15px;
+        }
+        .checkbox-label {
+            display: flex; align-items: start; cursor: pointer; font-size: 0.9rem; font-weight: bold;
+        }
+        .checkbox-label input {
+            width: 20px; height: 20px; margin-right: 10px; margin-top: 2px; flex-shrink: 0;
+        }
 
-        /* ボタンは緑色に統一 */
+        /* ボタンのスタイル（無効時はグレー、有効時は緑） */
         button { 
-            width: 100%; 
-            padding: 16px; 
-            background-color: #00b900; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: 100%; padding: 16px; 
+            background-color: #ccc; /* デフォルトはグレー */
+            color: white; border: none; border-radius: 8px; 
+            font-size: 1.1rem; font-weight: bold; cursor: not-allowed;
+            transition: background 0.3s;
         }
-        button:active { background-color: #008f00; }
+        /* 有効化された時のスタイル */
+        button.active {
+            background-color: #00b900; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button.active:active { background-color: #008f00; }
         
         .result-box { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background-color: #eef9ee; 
-            border: 2px solid #c2e6c2; 
-            border-radius: 10px; 
-            display: none; 
+            margin-top: 20px; padding: 15px; background-color: #eef9ee; 
+            border: 2px solid #c2e6c2; border-radius: 10px; display: none; 
         }
         .res-value { font-size: 1.8rem; font-weight: 900; color: #d32f2f; text-align: center; margin: 10px 0; }
         
-        .footer-note { font-size: 0.75rem; color: #666; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.5; }
-        .warning-box {
-            background-color: #fff3cd; 
-            padding: 12px; 
-            border-radius: 6px; 
-            border: 1px solid #ffeeba; 
-            margin-bottom: 15px;
-            color: #856404;
+        /* フッター注釈のスタイル */
+        .footer-note { 
+            font-size: 0.75rem; color: #666; margin-top: 20px; 
+            border-top: 1px solid #eee; padding-top: 15px; line-height: 1.6; 
         }
-        .warning-list { padding-left: 20px; margin: 5px 0; }
-        .warning-list li { margin-bottom: 3px; }
         .highlight { color: #00529b; font-weight: bold; }
         
-        #globalError {
-            color: #d32f2f;
-            background-color: #ffe6e6;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-            margin-bottom: 15px;
-            border: 1px solid #ffcccc;
-        }
+        #globalError { color: #d32f2f; background: #ffe6e6; padding: 10px; border-radius: 6px; display: none; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        .error-border { border: 2px solid #ff4d4d; background-color: #fff0f0; }
     </style>
 </head>
 <body>
 <div class="card">
-    <h2>再就職手当 計算ツール</h2>
+    <h2>再就職手当 目安チェック</h2>
 
     <div id="globalError">※すべての項目を入力してください</div>
 
     <div class="input-group">
-        <label>離職時の年齢区分</label>
+        <label>離職時の年齢</label>
         <select id="ageGroup">
             <option value="under30">30歳未満</option>
             <option value="30to44">30歳以上 45歳未満</option>
@@ -125,87 +86,76 @@
         </select>
     </div>
     <div class="input-group">
-        <label>所定給付日数（日）</label>
-        <select id="totalDays" onchange="checkLimit()">
-            <option value="90">90日</option>
-            <option value="120">120日</option>
-            <option value="150">150日</option>
-            <option value="180">180日</option>
-            <option value="210">210日</option>
-            <option value="240">240日</option>
-            <option value="270">270日</option>
-            <option value="300">300日</option>
-            <option value="330">330日</option>
-            <option value="360">360日</option>
+        <label>所定給付日数</label>
+        <select id="totalDays">
+            <option value="90">90日</option><option value="120">120日</option>
+            <option value="150">150日</option><option value="180">180日</option>
+            <option value="210">210日</option><option value="240">240日</option>
+            <option value="270">270日</option><option value="300">300日</option>
+            <option value="330">330日</option><option value="360">360日</option>
         </select>
     </div>
     <div class="input-group">
-        <label>支給残日数（日）</label>
-        <div style="font-size:0.75rem; color:#666; margin-bottom:3px;">※就職日の<span style="color:#d32f2f; font-weight:bold;">前日時点</span>の日数</div>
-        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric" oninput="checkLimit()">
-        <div id="limitErrorMsg" style="color:#d32f2f; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
+        <label>支給残日数</label>
+        <div class="sub-label">※就職日の<span style="color:#d32f2f; font-weight:bold;">前日時点</span>の日数</div>
+        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric">
     </div>
     <div class="input-group">
-        <label>基本手当日額（円）</label>
-        <input type="text" id="dailyAmount" placeholder="例: 6,000" inputmode="numeric" oninput="formatCurrency(this)">
+        <label>基本手当日額</label>
+        <div class="sub-label">受給資格者証の「19.基本手当日額」<br>※最大上限 8,870円まで</div>
+        <input type="tel" id="dailyAmount" placeholder="例: 6,000" maxlength="5" oninput="strictCurrencyCheck(this)">
     </div>
 
-    <button onclick="calculateFinal()">計算を実行</button>
+    <div class="agreement-box">
+        <label class="checkbox-label">
+            <input type="checkbox" id="agreeCheck" onchange="toggleButton()">
+            <span>この計算結果はあくまで目安であり、実際の支給額を保証するものではないことに同意します。</span>
+        </label>
+    </div>
+
+    <button id="calcBtn" onclick="calculateFinal()" disabled>同意して計算する</button>
 
     <div id="resultArea" class="result-box">
         <div style="font-size:0.9rem;">給付率判定：<span id="rateLabel" style="font-weight:bold; color:#00529b;"></span></div>
-        <div style="font-size:0.9rem; margin-top:10px;">支給概算額：</div>
+        <div style="font-size:0.9rem; margin-top:10px;">支給目安額：</div>
         <div class="res-value" id="finalResult">0 円</div>
+        <div style="font-size:0.8rem; text-align:right; color:#666;">※千円未満切り捨て</div>
     </div>
     
     <div class="footer-note">
-        <div class="warning-box">
-            <strong>【⚠ 計算の前に必ず確認】</strong><br>
-            以下の場合は、計算結果に関わらず<span style="color:#d32f2f; font-weight:bold;">支給対象外（0円）</span>となる可能性があります。
-            <ul class="warning-list">
-                <li><strong>待期期間（7日間）</strong>が経過する前に就職した</li>
-                <li><strong>過去3年以内</strong>に再就職手当を受け取っている</li>
-                <li>新しい仕事が<strong>1年未満の契約</strong>（更新見込み無し）である</li>
-                <li>離職前の会社に再び就職した（出戻り・関連会社含む）</li>
-                <li>(給付制限の方) 最初の1ヶ月間にハローワーク等の紹介以外で就職した</li>
-            </ul>
-        </div>
-        
-        【基本手当日額について】<br>
+        <div style="font-weight:bold; color:#00529b; margin-bottom:5px;">※ハローワーク松山仕様（令和７年度基準）</div>
+        <strong>【基本手当日額について】</strong><br>
         離職した日の直前6ヶ月間に支払われた賃金の合計を180で割った金額（賃金日額）の約50〜80％（60歳〜64歳は45〜80％）となります。<br><br>
-        ※正確な確定額は<span class="highlight">ハローワーク松山</span>が発行する<span class="highlight">「雇用保険受給資格者証」</span>にて通知されます。
+        ※正確な確定額は<span class="highlight">ハローワーク松山</span>が発行する「雇用保険受給資格者証」にて通知されます。
     </div>
 </div>
+
 <script>
-// カンマ区切りのフォーマット関数
-function formatCurrency(input) {
-    let val = input.value.replace(/,/g, "");
-    val = val.replace(/[０-９]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    });
-    val = val.replace(/[^0-9]/g, "");
+// ボタンの有効/無効を切り替える機能
+function toggleButton() {
+    const checkbox = document.getElementById('agreeCheck');
+    const btn = document.getElementById('calcBtn');
     
-    if (val === "") {
-        input.value = "";
-        return;
+    if (checkbox.checked) {
+        btn.disabled = false;
+        btn.classList.add("active"); // 緑色にする
+    } else {
+        btn.disabled = true;
+        btn.classList.remove("active"); // グレーに戻す
     }
-    input.value = Number(val).toLocaleString();
 }
 
-function checkLimit() {
-    const total = parseInt(document.getElementById('totalDays').value);
-    const remainInput = document.getElementById('remainDays');
-    const limitMsg = document.getElementById('limitErrorMsg');
+// 厳密な通貨チェック＆物理上限（8870円）
+function strictCurrencyCheck(input) {
+    let val = input.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[^0-9]/g, "");
+    if (val === "") { input.value = ""; return; }
     
-    if (remainInput.value && parseInt(remainInput.value) > total) {
-        remainInput.value = total;
-        remainInput.classList.add("error-border");
-        limitMsg.style.display = "block";
-        setTimeout(() => {
-            remainInput.classList.remove("error-border");
-            limitMsg.style.display = "none";
-        }, 1500);
-    }
+    let numVal = parseInt(val, 10);
+    // 全年齢共通の絶対上限（入力ミス防止用）
+    const ABSOLUTE_MAX = 8870; 
+    
+    if (numVal > ABSOLUTE_MAX) numVal = ABSOLUTE_MAX;
+    input.value = numVal.toLocaleString();
 }
 
 function calculateFinal() {
@@ -213,8 +163,6 @@ function calculateFinal() {
     const total = parseFloat(document.getElementById('totalDays').value);
     const remain = parseFloat(document.getElementById('remainDays').value);
     const dailyInput = document.getElementById('dailyAmount');
-    
-    // カンマを除去して数値化
     let daily = parseFloat(dailyInput.value.replace(/,/g, ""));
     
     const errorBox = document.getElementById('globalError');
@@ -231,6 +179,12 @@ function calculateFinal() {
         return; 
     }
     
+    if (remain > total) {
+        alert("支給残日数が所定給付日数を超えています");
+        return;
+    }
+
+    // 計算用キャップ（年齢別）
     let cap = 0;
     if (age === "under30") cap = 7255;
     else if (age === "30to44") cap = 8055;
@@ -239,17 +193,28 @@ function calculateFinal() {
     
     if (daily > cap) daily = cap;
     
-    let rate = 0;
-    let rateText = "";
+    let rate = 0; let rateText = "";
     const ratio = remain / total;
     
     if (ratio >= (2/3)) { rate = 0.7; rateText = "70%"; }
     else if (ratio >= (1/3)) { rate = 0.6; rateText = "60%"; }
     else { rateText = "支給対象外"; }
     
-    const result = Math.floor(remain * rate * daily);
+    // 計算実行
+    const rawResult = Math.floor(remain * rate * daily);
+    
+    // 【対策】千円未満を切り捨てて「丸める」
+    const safeResult = Math.floor(rawResult / 1000) * 1000;
+
     document.getElementById('rateLabel').innerText = rateText;
-    document.getElementById('finalResult').innerText = result.toLocaleString() + " 円";
+    
+    // 「約」をつけて表示
+    if(rate > 0) {
+        document.getElementById('finalResult').innerText = "約 " + safeResult.toLocaleString() + " 円";
+    } else {
+        document.getElementById('finalResult').innerText = "0 円";
+    }
+    
     document.getElementById('resultArea').style.display = "block";
 }
 </script>
