@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学歴・暦年換算ツール</title>
+    <title>学歴・暦年自動計算ツール</title>
     <style>
         body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; line-height: 1.6; padding: 20px; background-color: #f8f9fa; color: #333; }
         .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
@@ -16,8 +16,10 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
         th { background-color: #fce4ec; color: #c2185b; width: 40%; }
-        .note { font-size: 0.75rem; color: #666; margin-top: 15px; line-height: 1.4; }
-        .highlight { color: #d81b60; font-weight: bold; }
+        .disclaimer-box { margin-top: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 6px; background-color: #fdfdfd; }
+        .disclaimer-box h2 { font-size: 0.85rem; margin-top: 0; color: #666; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .disclaimer-box ul { padding-left: 20px; margin: 0; font-size: 0.75rem; color: #666; }
+        .disclaimer-box li { margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -44,13 +46,19 @@
                 </tr>
             </thead>
             <tbody id="resultTable">
-                </tbody>
+            </tbody>
         </table>
     </div>
 
-    <div class="note">
-        ※資料に基づき計算：早生まれは「生年-1」で算出します。<br>
-        ※浪人・留年等は考慮していません。必要に応じて年数を加減してください。
+    <div class="disclaimer-box">
+        <h2>免責事項</h2>
+        <ul>
+            <li>本ツールは、一般的な就学基準に基づく計算結果を表示する参考用ツールです。</li>
+            <li>計算には細心の注意を払っておりますが、情報の正確性、完全性、有用性を保証するものではありません。</li>
+            <li>本計算結果は「ストレートでの入学・卒業」を前提としています。浪人・留年・留学・休学等の期間は考慮されておりませんので、必要に応じてご自身で加減してください。</li>
+            <li>早生まれ（1月1日〜4月1日）の判定は、入力されたチェックボックスの状態に基づきます。</li>
+            <li>本ツールの利用により生じたいかなる損害についても、<strong>ハローワーク松山</strong>は一切の責任を負いません。公的な書類への記入に際しては、必ずご自身で原本や証明書等と照合してください。</li>
+        </ul>
     </div>
 </div>
 
@@ -81,8 +89,6 @@
         }
 
         resultArea.style.display = 'block';
-        
-        // 資料の注記：早生まれの場合は生年を-1する
         const baseYear = isEarly ? year - 1 : year;
 
         const milestones = [
