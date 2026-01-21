@@ -3,316 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>就業促進定着手当 シミュレーター</title>
+    <title>学歴・暦年換算ツール</title>
     <style>
-        body { 
-            font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; 
-            background-color: #fffde7; 
-            color: #3e2723; 
-            padding: 10px; 
-            margin: 0; 
-            display: flex;
-            justify-content: center;
-        }
-        .card { 
-            width: 100%; 
-            max-width: 480px; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(62, 39, 35, 0.1); 
-            box-sizing: border-box;
-            margin-top: 10px;
-            /* アクセントライン：濃いイエロー */
-            border-top: 5px solid #fbc02d;
-        }
-        
-        h2 { 
-            color: #f57f17; 
-            text-align: center; 
-            font-size: 1.3rem; 
-            margin-top: 0; 
-            border-bottom: 2px solid #fff59d; 
-            padding-bottom: 10px; 
-        }
-        
-        .input-group { margin-bottom: 15px; }
-        
-        /* ▼変更点：ラベルを黒（濃いグレー）に変更 */
-        label { 
-            display: block; 
-            font-size: 0.9rem; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            color: #333333; 
-        }
-        .sub-label { font-size: 0.75rem; color: #8d6e63; margin-bottom: 5px; display: block; }
-        
-        input, select { 
-            width: 100%; 
-            padding: 12px; 
-            font-size: 16px; 
-            border: 1px solid #ffe082; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            background-color: #fff;
-            color: #333;
-        }
-        .error-border { border: 2px solid #ff7043; background-color: #fbe9e7; }
-
-        /* ▼変更点：ボタンを緑色に変更 */
-        button { 
-            width: 100%; 
-            padding: 16px; 
-            background-color: #00b900; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        button:active { background-color: #008f00; }
-        
-        .result-box { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background-color: #fff9c4; 
-            border: 2px solid #fff176; 
-            border-radius: 10px; 
-            display: none; 
-        }
-        .res-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; border-bottom: 1px dashed #f9a825; padding-bottom: 5px; }
-        .res-label { font-size: 0.9rem; color: #5d4037; }
-        .res-sub { font-size: 1.1rem; font-weight: bold; color: #3e2723; }
-        .res-main { font-size: 1.8rem; font-weight: 900; color: #e65100; text-align: center; margin: 15px 0 5px 0; }
-        
-        .footer-note { font-size: 0.75rem; color: #795548; margin-top: 20px; border-top: 1px solid #fff59d; padding-top: 10px; line-height: 1.5; }
-        .warning-box {
-            background-color: #fff3cd; 
-            padding: 12px; 
-            border-radius: 6px; 
-            border: 1px solid #ffeeba; 
-            margin-bottom: 15px;
-            color: #856404;
-        }
-        .warning-list { padding-left: 20px; margin: 5px 0; }
-        .warning-list li { margin-bottom: 3px; }
-        .highlight { color: #f57f17; font-weight: bold; }
-        
-        #globalError {
-            color: #d84315;
-            background-color: #fbe9e7;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-            margin-bottom: 15px;
-            border: 1px solid #ffccbc;
-        }
-        
-        hr.divider { border: 0; border-top: 1px dashed #fbc02d; margin: 20px 0; }
+        body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; line-height: 1.6; padding: 20px; background-color: #f8f9fa; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h1 { font-size: 1.25rem; text-align: center; color: #d81b60; border-bottom: 2px solid #fce4ec; padding-bottom: 10px; }
+        .input-section { background: #fff5f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f8bbd0; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 15px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #d81b60; font-weight: bold; }
+        .checkbox-group input { width: auto; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background-color: #fce4ec; color: #c2185b; width: 40%; }
+        .note { font-size: 0.75rem; color: #666; margin-top: 15px; line-height: 1.4; }
+        .highlight { color: #d81b60; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>就業促進定着手当<br>概算シミュレーター</h2>
-    
-    <div id="globalError">※すべての項目を入力してください</div>
-    
-    <div class="input-group">
-        <label>① 基本手当日額（離職時）</label>
-        <div class="sub-label">受給資格者証の第1面「19.基本手当日額」<br>※上限: 8,870円 (R7年度推定)</div>
-        <input type="text" id="basicDaily" placeholder="例: 6,000" inputmode="numeric" oninput="formatCurrency(this, 8870)">
-    </div>
+<div class="container">
+    <h1>学歴・暦年自動計算ツール</h1>
 
-    <div class="input-group">
-        <label>② 所定給付日数</label>
-        <select id="totalDays" onchange="checkLimit()">
-            <option value="90">90日</option>
-            <option value="120">120日</option>
-            <option value="150">150日</option>
-            <option value="180">180日</option>
-            <option value="210">210日</option>
-            <option value="240">240日</option>
-            <option value="270">270日</option>
-            <option value="300">300日</option>
-            <option value="330">330日</option>
-            <option value="360">360日</option>
-        </select>
-    </div>
-
-    <div class="input-group">
-        <label>③ 再就職手当を受けた時の「支給残日数」</label>
-        <input type="number" id="remainDays" placeholder="例: 65" inputmode="numeric" oninput="checkLimit()">
-        <div id="limitErrorMsg" style="color:#d84315; font-size:0.8rem; display:none; margin-top:5px;">※所定給付日数を超える入力はできません</div>
-    </div>
-
-    <hr class="divider">
-
-    <div class="input-group">
-        <label>④ 新しい職場の「6ヶ月間の賃金総額」</label>
-        <div class="sub-label">※再就職後6ヶ月間の総支給額（賞与除く）</div>
-        <input type="text" id="newTotalWages" placeholder="例: 1,200,000" inputmode="numeric" oninput="formatCurrency(this)">
-    </div>
-
-    <div class="input-group">
-        <label>⑤ 新しい職場の「6ヶ月間の賃金支払基礎日数」</label>
-        <div class="sub-label">※月給制なら出勤日数ではなく暦日数（例:約180日）</div>
-        <input type="number" id="newWorkDays" placeholder="例: 180" inputmode="numeric">
-    </div>
-
-    <button onclick="calcRetention()">計算を実行</button>
-
-    <div id="resultArea" class="result-box">
-        <div class="res-row">
-            <span class="res-label">以前の賃金日額</span>
-            <span class="res-sub" id="oldDailyWage">0 円</span>
-        </div>
-        <div class="res-row">
-            <span class="res-label">新しい賃金日額</span>
-            <span class="res-sub" id="newDailyWage">0 円</span>
-        </div>
-        <div class="res-row">
-            <span class="res-label">差額（1日あたり）</span>
-            <span class="res-sub" id="diffDaily">0 円</span>
-        </div>
-        <div class="res-row">
-            <span class="res-label">上限額（支給限度）</span>
-            <span class="res-sub" id="limitAmount">0 円</span>
-        </div>
+    <div class="input-section">
+        <label>生まれた西暦を入力</label>
+        <input type="number" id="birthYear" placeholder="例: 1995" oninput="calculate()">
         
-        <div style="text-align:center; font-size:0.9rem; margin-top:15px; color:#e65100; font-weight:bold;">支給予定額</div>
-        <div class="res-main" id="finalAmount">0 円</div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="isEarlyBirth" onchange="calculate()">
+            <label for="isEarlyBirth">1月1日〜4月1日生まれ（早生まれ）</label>
+        </div>
     </div>
 
-    <div class="footer-note">
-        <div class="warning-box">
-            <strong>【⚠ 計算の前に必ず確認】</strong><br>
-            以下の場合、この手当は<span style="color:#d84315; font-weight:bold;">支給されません</span>。
-            <ul class="warning-list">
-                <li>そもそも<strong>再就職手当</strong>を受給していない</li>
-                <li>再就職してから<strong>6ヶ月未満</strong>で退職した</li>
-                <li>新しい賃金日額が、離職前の賃金日額より<strong>下がっていない</strong>（または同額）</li>
-                <li>6ヶ月経過した日の翌日から<strong>2ヶ月</strong>を過ぎて申請した（時効）</li>
-            </ul>
-        </div>
-        
-        ※本ツールは概算です。正確な支給額は<span class="highlight">ハローワーク松山</span>へ申請後に決定されます。
+    <div id="resultArea" style="display:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>年度（西暦 / 和暦）</th>
+                </tr>
+            </thead>
+            <tbody id="resultTable">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="note">
+        ※資料に基づき計算：早生まれは「生年-1」で算出します。<br>
+        ※浪人・留年等は考慮していません。必要に応じて年数を加減してください。
     </div>
 </div>
 
 <script>
-// カンマ区切り＆上限チェック関数
-function formatCurrency(input, maxLimit) {
-    let val = input.value.replace(/,/g, "");
-    val = val.replace(/[０-９]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    });
-    val = val.replace(/[^0-9]/g, "");
-    
-    if (val === "") {
-        input.value = "";
-        return;
+    function getWareki(year) {
+        if (year >= 2019) {
+            const r = year - 2018;
+            return `令和${r === 1 ? '元' : r}年`;
+        } else if (year >= 1989) {
+            const h = year - 1988;
+            return `平成${h === 1 ? '元' : h}年`;
+        } else if (year >= 1926) {
+            const s = year - 1925;
+            return `昭和${s === 1 ? '元' : s}年`;
+        }
+        return year + "年";
     }
 
-    let numVal = Number(val);
+    function calculate() {
+        let year = parseInt(document.getElementById('birthYear').value);
+        const isEarly = document.getElementById('isEarlyBirth').checked;
+        const resultArea = document.getElementById('resultArea');
+        const tableBody = document.getElementById('resultTable');
 
-    // 上限チェック（指定がある場合）
-    if (maxLimit && numVal > maxLimit) {
-        numVal = maxLimit;
+        if (!year || year < 1900) {
+            resultArea.style.display = 'none';
+            return;
+        }
+
+        resultArea.style.display = 'block';
+        
+        // 資料の注記：早生まれの場合は生年を-1する
+        const baseYear = isEarly ? year - 1 : year;
+
+        const milestones = [
+            { label: "小学校 入学", offset: 7, month: "4" },
+            { label: "小学校 卒業", offset: 13, month: "3" },
+            { label: "中学校 入学", offset: 13, month: "4" },
+            { label: "中学校 卒業", offset: 16, month: "3" },
+            { label: "高等学校 入学", offset: 16, month: "4" },
+            { label: "高等学校 卒業", offset: 19, month: "3" },
+            { label: "大学(4年制) 入学", offset: 19, month: "4" },
+            { label: "大学(4年制) 卒業", offset: 23, month: "3" }
+        ];
+
+        let html = "";
+        milestones.forEach(m => {
+            const calcYear = baseYear + m.offset;
+            html += `<tr>
+                <td>${m.label}</td>
+                <td>${calcYear}年（${getWareki(calcYear)}）${m.month}月</td>
+            </tr>`;
+        });
+
+        tableBody.innerHTML = html;
     }
-
-    input.value = numVal.toLocaleString();
-}
-
-function checkLimit() {
-    const total = parseInt(document.getElementById('totalDays').value);
-    const remainInput = document.getElementById('remainDays');
-    const limitMsg = document.getElementById('limitErrorMsg');
-    
-    if (remainInput.value && parseInt(remainInput.value) > total) {
-        remainInput.value = total;
-        remainInput.classList.add("error-border");
-        limitMsg.style.display = "block";
-        setTimeout(() => {
-            remainInput.classList.remove("error-border");
-            limitMsg.style.display = "none";
-        }, 1500);
-    }
-}
-
-function calcRetention() {
-    const basicDailyInput = document.getElementById('basicDaily');
-    const remainDaysInput = document.getElementById('remainDays');
-    const newTotalInput = document.getElementById('newTotalWages');
-    const newDaysInput = document.getElementById('newWorkDays');
-    
-    // カンマを除去して数値化
-    const basicDaily = parseFloat(basicDailyInput.value.replace(/,/g, ""));
-    const newTotal = parseFloat(newTotalInput.value.replace(/,/g, ""));
-    
-    const totalDays = parseFloat(document.getElementById('totalDays').value);
-    const remainDays = parseFloat(remainDaysInput.value);
-    const newDays = parseFloat(newDaysInput.value);
-    
-    const errorBox = document.getElementById('globalError');
-    
-    errorBox.style.display = "none";
-    [basicDailyInput, remainDaysInput, newTotalInput, newDaysInput].forEach(el => el.classList.remove("error-border"));
-
-    if (!basicDaily || !remainDays || !newTotal || !newDays) {
-        errorBox.style.display = "block";
-        if(!basicDaily) basicDailyInput.classList.add("error-border");
-        if(!remainDays) remainDaysInput.classList.add("error-border");
-        if(!newTotal) newTotalInput.classList.add("error-border");
-        if(!newDays) newDaysInput.classList.add("error-border");
-        return;
-    }
-
-    // 1. 新しい賃金日額の算出
-    const newDaily = Math.floor(newTotal / newDays);
-
-    // 2. 再就職手当の給付率判定
-    let rate = 0.6;
-    if ((remainDays / totalDays) >= (2/3)) {
-        rate = 0.7;
-    }
-
-    // 3. 上限額の計算
-    // 上限額 = 基本手当日額 × (所定給付日数 - 再就職手当の支給日数)
-    const paidDays = Math.floor(remainDays * rate); 
-    const limitDays = totalDays - paidDays;
-    const limitAmount = Math.floor(basicDaily * limitDays);
-
-    // 4. 支給額の計算
-    let diff = basicDaily - newDaily; 
-    
-    if (diff < 0) diff = 0;
-
-    let tentativeAmount = Math.floor(diff * newDays);
-
-    // 上限キャップ
-    let final = tentativeAmount;
-    if (final > limitAmount) {
-        final = limitAmount;
-    }
-
-    // 表示更新
-    document.getElementById('oldDailyWage').innerText = basicDaily.toLocaleString() + " 円(※)";
-    document.getElementById('newDailyWage').innerText = newDaily.toLocaleString() + " 円";
-    document.getElementById('diffDaily').innerText = diff.toLocaleString() + " 円";
-    document.getElementById('limitAmount').innerText = limitAmount.toLocaleString() + " 円";
-    document.getElementById('finalAmount').innerText = final.toLocaleString() + " 円";
-    
-    document.getElementById('resultArea').style.display = "block";
-}
 </script>
+
 </body>
 </html>
