@@ -10,7 +10,10 @@
         h1 { font-size: 1.25rem; text-align: center; color: #d81b60; border-bottom: 2px solid #fce4ec; padding-bottom: 10px; }
         .input-section { background: #fff5f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f8bbd0; }
         label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; }
+        /* 制限のヒントを表示するスタイル */
+        .input-hint { font-size: 0.75rem; color: #666; margin-bottom: 5px; font-weight: normal; }
         input, select { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 15px; }
+        .error-msg { color: #d32f2f; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; display: none; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #d81b60; font-weight: bold; }
         .checkbox-group input { width: auto; margin: 0; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
@@ -29,7 +32,9 @@
 
     <div class="input-section">
         <label>生まれた西暦を入力</label>
-        <input type="number" id="birthYear" placeholder="例: 1995" oninput="calculate()">
+        <p class="input-hint">※1900年〜2026年の範囲で入力してください</p>
+        <input type="number" id="birthYear" placeholder="例: 1995" min="1900" max="2026" oninput="calculate()">
+        <div id="errorArea" class="error-msg"></div>
         
         <div class="checkbox-group">
             <input type="checkbox" id="isEarlyBirth" onchange="calculate()">
@@ -73,24 +78,49 @@
         } else if (year >= 1926) {
             const s = year - 1925;
             return `昭和${s === 1 ? '元' : s}年`;
+        } else if (year >= 1912) {
+            const t = year - 1911;
+            return `大正${t === 1 ? '元' : t}年`;
+        } else if (year >= 1868) {
+            const m = year - 1867;
+            return `明治${m === 1 ? '元' : m}年`;
         }
         return year + "年";
     }
 
     function calculate() {
-        let year = parseInt(document.getElementById('birthYear').value);
-        const isEarly = document.getElementById('isEarlyBirth').checked;
+        const input = document.getElementById('birthYear');
+        const errorArea = document.getElementById('errorArea');
         const resultArea = document.getElementById('resultArea');
         const tableBody = document.getElementById('resultTable');
+        
+        let year = parseInt(input.value);
+        const isEarly = document.getElementById('isEarlyBirth').checked;
 
-        if (!year || year < 1900) {
+        // 入力が空、または極端な数値のチェック
+        if (!year) {
+            resultArea.style.display = 'none';
+            errorArea.style.display = 'none';
+            return;
+        }
+
+        // 範囲制限（1900年〜2026年）
+        const minYear = 1900;
+        const maxYear = 2026;
+
+        if (year < minYear || year > maxYear) {
+            errorArea.innerText = `※${minYear}年〜${maxYear}年の範囲で入力してください。`;
+            errorArea.style.display = 'block';
             resultArea.style.display = 'none';
             return;
+        } else {
+            errorArea.style.display = 'none';
         }
 
         resultArea.style.display = 'block';
         const baseYear = isEarly ? year - 1 : year;
 
+        // 資料に基づく学歴計算定数
         const milestones = [
             { label: "小学校 入学", offset: 7, month: "4" },
             { label: "小学校 卒業", offset: 13, month: "3" },
@@ -98,8 +128,9 @@
             { label: "中学校 卒業", offset: 16, month: "3" },
             { label: "高等学校 入学", offset: 16, month: "4" },
             { label: "高等学校 卒業", offset: 19, month: "3" },
-            { label: "大学(4年制) 入学", offset: 19, month: "4" },
-            { label: "大学(4年制) 卒業", offset: 23, month: "3" }
+            { label: "大学・専門学校(2年制) 卒業", offset: 21, month: "3" },
+            { label: "専門学校(3年制) 卒業", offset: 22, month: "3" },
+            { label: "大学・専門学校(4年制) 卒業", offset: 23, month: "3" }
         ];
 
         let html = "";
