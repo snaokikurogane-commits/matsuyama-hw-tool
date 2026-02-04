@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>履歴書・雇用保険計算サポートツール</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 15px; background-color: #f8f9fa; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.2rem; text-align: center; color: #d81b60; border-bottom: 2px solid #fce4ec; padding-bottom: 10px; margin-top: 0; }
+        
+        /* タブ切り替え */
+        .tab-menu { display: flex; gap: 5px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px 5px; border: 1px solid #d81b60; background: white; color: #d81b60; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .tab-btn.active { background: #d81b60; color: white; }
+        
+        .section { background: #fff5f8; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #f8bbd0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.85rem; }
+        input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; margin-bottom: 10px; }
+        
+        .result-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #90caf9; margin-top: 10px; }
+        .result-title { font-size: 0.8rem; color: #1565c0; margin: 0; }
+        .result-val { font-size: 1.2rem; color: #1565c0; font-weight: bold; text-align: center; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+        th { background-color: #fce4ec; color: #c2185b; }
+        
+        .disclaimer { margin-top: 25px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; font-size: 0.7rem; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>計算サポートツール</h1>
+
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="showTab('edu')">学歴計算</button>
+        <button class="tab-btn" onclick="showTab('period')">期間計算</button>
+        <button class="tab-btn" onclick="showTab('benefit')">給付日数</button>
+    </div>
+
+    <div id="tab-edu" class="tab-content">
+        <div class="section">
+            <label>生まれた西暦 (1900-2026)</label>
+            <input type="number" id="birthYear" placeholder="例: 1995" oninput="calcEdu()">
+            <label style="font-weight:normal;"><input type="checkbox" id="isEarly" onchange="calcEdu()"> 4/1以前生まれ(早生まれ)</label>
+        </div>
+        <div id="eduResult" style="display:none;">
+            <table>
+                <thead><tr><th>項目</th><th>年度(和暦)</th></tr></thead>
+                <tbody id="eduTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab-period" class="tab-content" style="display:none;">
+        <div class="section">
+            <label>入社日</label><input type="date" id="startD" onchange="calcPeriod()">
+            <label>退職日</label><input type="date" id="endD" onchange="calcPeriod()">
+        </div>
+        <div id="periodResult" class="result-box" style="display:none;">
+            <p class="result-title">勤続期間</p>
+            <div id="periodVal" class="result-val"></div>
+        </div>
+    </div>
+
+    <div id="tab-benefit" class="tab-content" style="display:none;">
+        <div class="section">
+            <label>離職時の年齢</label>
+            <input type="number" id="ageAtLeft" placeholder="例: 45" oninput="calcBenefit()">
+            <label>被保険者期間</label>
+            <select id="insPeriod" onchange="calcBenefit()">
+                <option value="0">1年未満</option>
+                <option value="1">1年以上5年未満</option>
+                <option value="5">5年以上10年未満</option>
+                <option value="10">10年以上20年未満</option>
+                <option value="20">20年以上</option>
+            </select>
+            <label>離職理由</label>
+            <select id="leftReason" onchange="calcBenefit()">
+                <option value="general">自己都合・定年など</option>
+                <option value="special">倒産・解雇など(特定受給)</option>
+            </select>
+        </div>
+        <div id="benefitResult" class="result-box" style="display:none;">
+            <p class="result-title">所定給付日数(目安)</p>
+            <div id="benefitVal" class="result-val"></div>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>免責事項</strong>
+        <ul>
+            <li>本ツールは一般的な基準に基づく「目安」を表示するものです。</li>
+            <li>実際の学歴や給付日数は、個別の事情により異なる場合があります。</li>
+            <li>利用により生じたいかなる損害についても、<strong>ハローワーク松山</strong>は一切の責任を負いません。</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).style.display = 'block';
+    event.currentTarget.classList.add('active');
+}
+
+function getW(y) {
+    if (y >= 2019) return `令和${y-2018==1?'元':y-2018}年`;
+    if (y >= 1989) return `平成${y-1988==1?'元':y-1988}年`;
+    if (y >= 1926) return `昭和${y-1925==1?'元':y-1925}年`;
+    return y + "年";
+}
+
+function calcEdu() {
+    const y = parseInt(document.getElementById('birthYear').value);
+    if (!y || y < 1900 || y > 2026) return;
+    document.getElementById('eduResult').style.display = 'block';
+    const base = document.getElementById('isEarly').checked ? y - 1 : y;
+    const list = [
+        {l:"小学校 卒業", o:13, m:3}, {l:"中学校 卒業", o:16, m:3},
+        {l:"高校 卒業", o:19, m:3}, {l:"大学(4年) 卒業", o:23, m:3}
+    ];
+    let h = "";
+    list.forEach(i => { h += `<tr><td>${i.l}</td><td>${i.o+base}年(${getW(i.o+base)})${i.m}月</td></tr>`; });
+    document.getElementById('eduTableBody').innerHTML = h;
+}
+
+function calcPeriod() {
+    const s = new Date(document.getElementById('startD').value);
+    const e = new Date(document.getElementById('endD').value);
+    if (isNaN(s) || isNaN(e)) return;
+    let yy = e.getFullYear() - s.getFullYear();
+    let mm = e.getMonth() - s.getMonth();
+    let dd = e.getDate() - s.getDate();
+    if (dd < 0) { mm--; const last = new Date(e.getFullYear(), e.getMonth(), 0); dd += last.getDate(); }
+    if (mm < 0) { yy--; mm += 12; }
+    document.getElementById('periodResult').style.display = 'block';
+    document.getElementById('periodVal').innerText = yy < 0 ? "日付を確認してください" : `${yy}年 ${mm}ヶ月 ${dd}日`;
+}
+
+function calcBenefit() {
+    const age = parseInt(document.getElementById('ageAtLeft').value);
+    const ins = parseInt(document.getElementById('insPeriod').value);
+    const res = document.getElementById('leftReason').value;
+    if (!age) return;
+    let days = "判定不可";
+    
+    if (res === "general") {
+        if (ins >= 20) days = "150日";
+        else if (ins >= 10) days = "120日";
+        else if (ins >= 1) days = "90日";
+        else days = "受給資格なし(原則1年以上)";
+    } else {
+        if (age < 30) {
+            if (ins >= 5) days = "120日"; else if (ins >= 1) days = "90日"; else days = "90日";
+        } else if (age < 35) {
+            if (ins >= 10) days = "210日"; else if (ins >= 5) days = "180日"; else if (ins >= 1) days = "120日"; else days = "90日";
+        } else if (age < 45) {
+            if (ins >= 20) days = "270日"; else if (ins >= 10) days = "240日"; else if (ins >= 5) days = "180日"; else if (ins >= 1) days = "150日"; else days = "90日";
+        } else if (age < 60) {
+            if (ins >= 20) days = "330日"; else if (ins >= 10) days = "270日"; else if (ins >= 5) days = "240日"; else if (ins >= 1) days = "180日"; else days = "90日";
+        } else {
+            if (ins >= 20) days = "240日"; else if (ins >= 10) days = "210日"; else if (ins >= 5) days = "180日"; else if (ins >= 1) days = "150日"; else days = "90日";
+        }
+    }
+    document.getElementById('benefitResult').style.display = 'block';
+    document.getElementById('benefitVal').innerText = days;
+}
+</script>
+</body>
+</html>
