@@ -9,6 +9,7 @@
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h1 { font-size: 1.1rem; text-align: center; color: #0056b3; border-bottom: 2px solid #e3f2fd; padding-bottom: 10px; margin-top: 0; }
         
+        /* タブデザイン */
         .tab-menu { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
         .tab-btn { flex: 1; min-width: 80px; padding: 8px 4px; border: 1px solid #0056b3; background: white; color: #0056b3; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
         .tab-btn.active { background: #0056b3; color: white; }
@@ -20,20 +21,21 @@
         .result-box { background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2; margin-top: 10px; }
         .result-title { font-size: 0.9rem; color: #e65100; margin: 0 0 10px 0; font-weight: bold; border-bottom: 1px dashed #e65100; padding-bottom: 5px; }
         
+        /* ToDoリスト用 */
+        .todo-item { display: flex; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .todo-date { min-width: 90px; font-weight: bold; color: #d81b60; font-size: 0.9rem; }
+        .todo-content { flex: 1; font-size: 0.9rem; }
+        .todo-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: white; margin-bottom: 4px; }
+        .bg-city { background-color: #4caf50; } /* 市役所 */
+        .bg-hw { background-color: #2196f3; } /* ハローワーク */
+        .bg-tax { background-color: #ff9800; } /* 税金 */
+        .bg-ins { background-color: #9c27b0; } /* 社保 */
+
+        .sim-val { font-size: 1.1rem; font-weight: bold; color: #333; }
         .wall-check { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
         .status-safe { color: #2e7d32; font-weight: bold; background:#e8f5e9; padding:2px 6px; border-radius:4px; }
         .status-danger { color: #c62828; font-weight: bold; background:#ffebee; padding:2px 6px; border-radius:4px; }
-        .status-warn { color: #f9a825; font-weight: bold; background:#fffde7; padding:2px 6px; border-radius:4px; }
         
-        .rule-summary { margin-top: 30px; padding: 15px; background-color: #fafafa; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; }
-        .rule-summary h3 { font-size: 0.9rem; color: #333; margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
-        .rule-summary table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        .rule-summary th, .rule-summary td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-        .rule-summary th { background: #eee; width: 35%; }
-        
-        /* 再就職手当用 */
-        .reemploy-box { margin-top: 20px; border-top: 2px dashed #b3e5fc; padding-top: 15px; }
-
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
         th { background-color: #e3f2fd; color: #0d47a1; }
@@ -47,165 +49,142 @@
     <h1>業務支援ツール（統合版）</h1>
 
     <div class="tab-menu">
-        <button class="tab-btn active" onclick="showTab('fuyou')">扶養判定</button>
+        <button class="tab-btn active" onclick="showTab('todo')">手続きToDo</button>
+        <button class="tab-btn" onclick="showTab('sim')">再就職シミュ</button>
+        <button class="tab-btn" onclick="showTab('fuyou')">扶養判定</button>
         <button class="tab-btn" onclick="showTab('benefit')">給付/再就職</button>
-        <button class="tab-btn" onclick="showTab('edu')">学歴計算</button>
-        <button class="tab-btn" onclick="showTab('period')">期間計算</button>
+        <button class="tab-btn" onclick="showTab('edu')">学歴/期間</button>
     </div>
 
-    <div id="tab-fuyou" class="tab-content">
+    <div id="tab-todo" class="tab-content">
         <div class="section">
-            <label>時給 (円)</label>
-            <input type="number" id="wage" placeholder="例: 1050" oninput="calcFuyou()">
-            <div id="minWageAlert" style="display:none; color:#d32f2f; font-size:0.75rem; margin-bottom:5px;">※愛媛県最低賃金(956円)を下回っています</div>
-            
+            <label>離職日 (退職した日)</label>
+            <input type="date" id="todoResignDate" onchange="calcTodo()">
+            <p style="font-size:0.8rem; color:#666; margin:5px 0 0;">
+                ※雇用保険の日額が <strong>3,612円</strong> (60歳以上は5,000円) を超える場合、給付期間中は社会保険の扶養に入れません。
+            </p>
+        </div>
+
+        <div id="todoResult" class="result-box" style="display:none; background:#fff;">
+            <p class="result-title">離職後の手続き期限リスト</p>
+            <div id="todoListBody"></div>
+        </div>
+    </div>
+
+    <div id="tab-sim" class="tab-content" style="display:none;">
+        <div class="section">
+            <p style="margin-top:0; color:#0277bd; font-weight:bold;">現在の状況</p>
             <div style="display:flex; gap:10px;">
                 <div style="flex:1;">
-                    <label>1日の労働時間</label>
-                    <input type="number" id="hoursDay" placeholder="例: 5" oninput="calcFuyou()">
+                    <label>所定給付日数</label>
+                    <select id="simTotalDays" onchange="calcSim()">
+                        <option value="90">90日</option>
+                        <option value="120">120日</option>
+                        <option value="150">150日</option>
+                        <option value="180">180日</option>
+                        <option value="210">210日</option>
+                        <option value="240">240日</option>
+                    </select>
                 </div>
                 <div style="flex:1;">
-                    <label>週の労働日数</label>
-                    <input type="number" id="daysWeek" placeholder="例: 3" oninput="calcFuyou()">
+                    <label>現在の残日数</label>
+                    <input type="number" id="simCurrentRemain" placeholder="例: 60" oninput="calcSim()">
                 </div>
             </div>
-            <label style="margin-top:10px; color:#d32f2f;">交通費 (月額・円)</label>
-            <input type="number" id="transport" placeholder="例: 5000" oninput="calcFuyou()">
+            <label>直近の認定日</label>
+            <input type="date" id="simLastCertDate" onchange="calcSim()">
+            <hr style="border:0; border-top:1px dashed #ccc; margin:15px 0;">
+            <p style="margin-top:0; color:#d81b60; font-weight:bold;">就職予定日 (仮)</p>
+            <input type="date" id="simStartDate" onchange="calcSim()">
         </div>
-
-        <div id="fuyouResult" class="result-box" style="display:none; background:#fff;">
-            <p class="result-title">現在の働き方での見込み</p>
-            <div style="font-size:0.85rem; color:#555; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                <div>基本月収: <span id="baseMonthly" style="font-weight:bold;">0</span> 円 (交通費抜)</div>
-                <div>総支給額: <span id="totalMonthly" style="font-weight:bold;">0</span> 円 (交通費込)</div>
+        <div id="simResult" class="result-box" style="display:none; background:#fff;">
+            <p class="result-title">シミュレーション結果</p>
+            <div style="margin-bottom:10px;">
+                <div style="font-size:0.85rem; color:#0277bd;">① 就職日の前日まで (基本手当)</div>
+                <div class="sim-val"><span id="simBasicDays">0</span> 日分 支給</div>
+                <div style="font-size:0.8rem; color:#666;" id="simBasicPeriod">---</div>
             </div>
-
-            <div class="wall-check">
-                <span>103万の壁 (税金)<br><span style="font-size:0.7rem; color:#666;">※交通費を含まず計算</span></span>
-                <span id="wall103">---</span>
+            <div style="margin-bottom:10px;">
+                <div style="font-size:0.85rem; color:#d81b60;">② 就職前日時点の残日数</div>
+                <div class="sim-val"><span id="simFinalRemain">0</span> 日</div>
             </div>
-            <div class="wall-check">
-                <span>106万の壁 (社保)<br><span style="font-size:0.7rem; color:#666;">※交通費を含まず計算</span></span>
-                <span id="wall106">---</span>
+            <div style="border-top:1px dashed #ddd; padding-top:10px;">
+                <div style="font-size:0.85rem; color:#333;">③ 再就職手当の判定</div>
+                <div id="simVerdict" class="sim-val" style="color:#0277bd;">---</div>
+                <div id="simVerdictDetail" style="font-size:0.8rem; color:#666;">---</div>
             </div>
-            <div class="wall-check">
-                <span>130万の壁 (社保扶養)<br><span style="font-size:0.7rem; color:#d32f2f;">※交通費を含んで計算</span></span>
-                <span id="wall130">---</span>
-            </div>
-
-            <div style="margin-top:15px; border-top:2px dashed #ccc; padding-top:10px;">
-                <p class="result-title" style="color:#0277bd;">扶養内に収める目安 (今の時給で)</p>
-                <div style="font-size:0.9rem; margin-bottom:8px;">
-                    <strong>▼103万以内 (税金)</strong><br>
-                    週 <span id="limit103" style="color:#0277bd; font-weight:bold;">--</span> 時間程度
-                </div>
-                <div style="font-size:0.9rem;">
-                    <strong>▼130万以内 (社保扶養)</strong><br>
-                    週 <span id="limit130" style="color:#0277bd; font-weight:bold;">--</span> 時間程度
-                </div>
-            </div>
-        </div>
-
-        <div class="rule-summary">
-            <h3>知っておきたい判定のポイント</h3>
-            <table>
-                <tr>
-                    <th>壁の種類</th>
-                    <th>判定期間・基準</th>
-                    <th>交通費</th>
-                </tr>
-                <tr>
-                    <td><strong>103万</strong><br>(所得税)</td>
-                    <td><strong>1月〜12月</strong>の合計支給額<br>(過去の実績ベース)</td>
-                    <td><strong>含まない</strong></td>
-                </tr>
-                <tr>
-                    <td><strong>130万</strong><br>(健保扶養)</td>
-                    <td><strong>向こう1年間</strong>の見込み<br>(未来の予測ベース)</td>
-                    <td><strong style="color:#d32f2f;">含む</strong></td>
-                </tr>
-            </table>
-            <ul style="margin-top:10px; padding-left:20px; color:#666;">
-                <li>学生(勤労学生控除)の場合、税金の壁は<strong>130万円</strong>になります(社保は130万のまま)。</li>
-                <li>愛媛県の最低賃金(R6年度:956円)を下回らないようご注意ください。</li>
-            </ul>
         </div>
     </div>
 
-    <div id="tab-benefit" class="tab-content" style="display:none;">
+    <div id="tab-fuyou" class="tab-content" style="display:none;">
         <div class="section">
-            <p style="margin-top:0; font-weight:bold; color:#0277bd;">① 所定給付日数の計算</p>
-            <label>離職時の年齢</label>
-            <input type="number" id="ageAtLeft" placeholder="例: 45" oninput="calcBenefit()">
-            <label>被保険者期間</label>
-            <select id="insPeriod" onchange="calcBenefit()">
-                <option value="0">1年未満</option>
-                <option value="1">1年以上5年未満</option>
-                <option value="5">5年以上10年未満</option>
-                <option value="10">10年以上20年未満</option>
-                <option value="20">20年以上</option>
-            </select>
-            <label>離職理由</label>
-            <select id="leftReason" onchange="calcBenefit()">
-                <option value="general">自己都合・定年など</option>
-                <option value="special">倒産・解雇など(特定受給)</option>
-            </select>
-            <div id="benefitResult" class="result-box" style="display:none;">
-                <p class="result-title">所定給付日数(目安)</p>
-                <div id="benefitVal" class="result-val"></div>
+            <label>時給(円)</label><input type="number" id="wage" placeholder="1050" oninput="calcFuyou()">
+            <div id="minWageAlert" style="display:none; color:#d32f2f; font-size:0.75rem;">※愛媛県最低賃金(956円)未満です</div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>1日時間</label><input type="number" id="hoursDay" placeholder="5" oninput="calcFuyou()"></div>
+                <div style="flex:1;"><label>週日数</label><input type="number" id="daysWeek" placeholder="3" oninput="calcFuyou()"></div>
             </div>
+            <label style="color:#d32f2f;">交通費(月額)</label><input type="number" id="transport" placeholder="5000" oninput="calcFuyou()">
         </div>
-
-        <div class="section reemploy-box">
-            <p style="margin-top:0; font-weight:bold; color:#0277bd;">② 再就職手当の判定</p>
-            <label>支給残日数 (残り何日?)</label>
-            <input type="number" id="remainDays" placeholder="例: 60" oninput="calcReemploy()">
-            <div id="reemployResult" class="result-box" style="display:none; background:#e1f5fe; border-color:#81d4fa;">
-                <p class="result-title" style="color:#0277bd;">判定結果</p>
-                <div id="reemployVal" class="result-val" style="color:#0277bd;"></div>
-                <p id="reemployDetail" style="font-size:0.8rem; color:#555; margin:5px 0 0;"></p>
+        <div id="fuyouResult" class="result-box" style="display:none; background:#fff;">
+            <p class="result-title">見込み年収判定</p>
+            <div style="margin-bottom:10px;">
+                <div>月収(交通費込): <span id="totalMonthly" style="font-weight:bold;">0</span> 円</div>
+                <div>年収(交通費込): <span id="totalYearly" style="font-weight:bold;">0</span> 円</div>
             </div>
+            <div class="wall-check"><span>103万(税金/交通費抜)</span><span id="wall103">---</span></div>
+            <div class="wall-check"><span>106万(社保/交通費抜)</span><span id="wall106">---</span></div>
+            <div class="wall-check"><span>130万(扶養/交通費込)</span><span id="wall130">---</span></div>
+            <p style="font-size:0.7rem; color:#666; margin-top:5px;">※130万の壁は「向こう1年間の見込み」で交通費も含みます。</p>
         </div>
     </div>
 
     <div id="tab-edu" class="tab-content" style="display:none;">
         <div class="section">
-            <label>生まれた西暦 (1900-2026)</label>
-            <input type="number" id="birthYear" placeholder="例: 1995" oninput="calcEdu()">
-            <label style="font-weight:normal;"><input type="checkbox" id="isEarly" onchange="calcEdu()"> 4/1以前生まれ(早生まれ)</label>
+            <label>生まれた西暦</label><input type="number" id="birthYear" placeholder="1995" oninput="calcEdu()">
+            <label style="font-weight:normal;"><input type="checkbox" id="isEarly" onchange="calcEdu()"> 早生まれ</label>
         </div>
         <div id="eduResult" style="display:none;">
-            <table>
-                <thead><tr><th>項目</th><th>年度(和暦)</th></tr></thead>
-                <tbody id="eduTableBody"></tbody>
-            </table>
+            <table><tbody id="eduTableBody"></tbody></table>
         </div>
-    </div>
-
-    <div id="tab-period" class="tab-content" style="display:none;">
-        <div class="section">
+        <div class="section" style="margin-top:15px;">
             <label>入社日</label><input type="date" id="startD" onchange="calcPeriod()">
             <label>退職日</label><input type="date" id="endD" onchange="calcPeriod()">
         </div>
         <div id="periodResult" class="result-box" style="display:none;">
             <p class="result-title">勤続期間</p>
-            <div id="periodVal" class="result-val"></div>
+            <div id="periodVal" class="sim-val"></div>
+        </div>
+    </div>
+    
+    <div id="tab-benefit" class="tab-content" style="display:none;">
+        <div class="section">
+            <label>年齢</label><input type="number" id="ageAtLeft" oninput="calcBenefit()">
+            <label>期間</label>
+            <select id="insPeriod" onchange="calcBenefit()">
+                <option value="0">1年未満</option><option value="1">1年以上</option><option value="10">10年以上</option><option value="20">20年以上</option>
+            </select>
+            <label>理由</label>
+            <select id="leftReason" onchange="calcBenefit()">
+                <option value="general">自己都合</option><option value="special">会社都合</option>
+            </select>
+        </div>
+        <div id="benefitResult" class="result-box" style="display:none;">
+            <p class="result-title">所定給付日数</p>
+            <div id="benefitVal" class="sim-val"></div>
         </div>
     </div>
 
     <div class="disclaimer">
         <strong>免責事項</strong>
         <ul>
-            <li>本ツールは目安を表示するものです。</li>
-            <li>扶養認定は、加入している健康保険組合や事業所の規模により基準が異なる場合があります。</li>
-            <li>再就職手当の支給には、残日数以外にも「待期期間満了後の就職であること」など複数の要件があります。</li>
-            <li>利用により生じたいかなる損害についても、<strong>ハローワーク松山</strong>は一切の責任を負いません。</li>
+            <li>本ツールは目安です。正確な手続き期限や扶養判定は、市役所・年金事務所・健保組合等へご確認ください。</li>
+            <li>利用による損害について、<strong>ハローワーク松山</strong>は一切責任を負いません。</li>
         </ul>
     </div>
 </div>
 
 <script>
-// --- タブ制御 ---
 function showTab(name) {
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -216,24 +195,112 @@ function showTab(name) {
     }
 }
 
-// --- 1. 扶養判定ロジック ---
+// --- 1. 手続きToDoリスト (NEW) ---
+function calcTodo() {
+    const dStr = document.getElementById('todoResignDate').value;
+    if (!dStr) { document.getElementById('todoResult').style.display = 'none'; return; }
+    
+    const d = new Date(dStr);
+    const fmt = (date) => `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+    const addDays = (date, days) => { const r = new Date(date); r.setDate(r.getDate() + days); return r; };
+
+    const limit14 = addDays(d, 14); // 14日以内
+    const limit20 = addDays(d, 20); // 20日以内
+
+    const items = [
+        {
+            tag: "市役所", cls: "bg-city", date: limit14,
+            text: "<strong>国民健康保険への切替</strong><br>※任意継続しない場合。離職票や資格喪失証明書が必要。"
+        },
+        {
+            tag: "市役所", cls: "bg-city", date: limit14,
+            text: "<strong>国民年金への切替 (第1号被保険者)</strong><br>※20歳以上60歳未満の方。年金手帳と離職票が必要。"
+        },
+        {
+            tag: "健保組合", cls: "bg-ins", date: limit20,
+            text: "<strong>健康保険の任意継続 (希望者のみ)</strong><br>※退職後20日以内に手続き必須。保険料は全額自己負担(約2倍)になります。"
+        },
+        {
+            tag: "税金", cls: "bg-tax", date: null,
+            text: "<strong>住民税の支払い</strong><br>※給与天引きから普通徴収(納付書払い)に変わります。後日、市役所から通知が届きます。"
+        },
+        {
+            tag: "扶養", cls: "bg-ins", date: null,
+            text: "<strong>家族の扶養に入る場合</strong><br>※雇用保険の日額が<strong>3,612円</strong>を超える場合、受給期間中は扶養に入れません。<br>受給終了後に手続きが必要です。"
+        }
+    ];
+
+    let html = "";
+    items.forEach(item => {
+        const dateStr = item.date ? `期限: ${fmt(item.date)}` : "随時/後日";
+        html += `
+        <div class="todo-item">
+            <div class="todo-date">${dateStr}</div>
+            <div class="todo-content">
+                <span class="todo-badge ${item.cls}">${item.tag}</span><br>
+                ${item.text}
+            </div>
+        </div>`;
+    });
+
+    document.getElementById('todoResult').style.display = 'block';
+    document.getElementById('todoListBody').innerHTML = html;
+}
+
+// --- 2. 再就職シミュ (省略なし) ---
+function calcSim() {
+    const total = parseInt(document.getElementById('simTotalDays').value);
+    const currentRemain = parseInt(document.getElementById('simCurrentRemain').value);
+    const lastCertStr = document.getElementById('simLastCertDate').value;
+    const startStr = document.getElementById('simStartDate').value;
+    const resultBox = document.getElementById('simResult');
+    
+    if (!total || !currentRemain || !lastCertStr || !startStr) { resultBox.style.display = 'none'; return; }
+
+    const lastCertDate = new Date(lastCertStr);
+    const startDate = new Date(startStr);
+    const diffTime = startDate - lastCertDate;
+    const daysToPay = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1;
+
+    if (daysToPay < 0) { resultBox.style.display = 'none'; return; }
+    resultBox.style.display = 'block';
+
+    document.getElementById('simBasicDays').innerText = daysToPay;
+    const periodStart = new Date(lastCertDate); periodStart.setDate(periodStart.getDate() + 1);
+    const periodEnd = new Date(startDate); periodEnd.setDate(periodEnd.getDate() - 1);
+    const fmt = (d) => `${d.getMonth()+1}/${d.getDate()}`;
+    document.getElementById('simBasicPeriod').innerText = `${fmt(periodStart)} 〜 ${fmt(periodEnd)}`;
+
+    const finalRemain = currentRemain - daysToPay;
+    document.getElementById('simFinalRemain').innerText = finalRemain < 0 ? "0 (終了)" : finalRemain;
+    
+    const ratio = finalRemain / total;
+    let rate = 0;
+    if (finalRemain > 0) {
+        if (ratio >= 2/3) rate = 70; else if (ratio >= 1/3) rate = 60;
+    }
+    const vEl = document.getElementById('simVerdict');
+    const dEl = document.getElementById('simVerdictDetail');
+    if (rate > 0) {
+        vEl.innerText = `支給対象 (${rate}%)`; vEl.style.color = "#2e7d32";
+        dEl.innerText = `残日数${finalRemain}日が所定${total}日の1/3以上です。`;
+    } else {
+        vEl.innerText = "支給なし"; vEl.style.color = "#d32f2f";
+        dEl.innerText = "残日数が足りないか、マイナスです。";
+    }
+}
+
+// --- 3. 扶養判定 (省略なし) ---
 function calcFuyou() {
     const wage = parseInt(document.getElementById('wage').value);
     const hDay = parseFloat(document.getElementById('hoursDay').value);
     const dWeek = parseFloat(document.getElementById('daysWeek').value);
     const trans = parseInt(document.getElementById('transport').value) || 0;
 
-    // 愛媛県最低賃金チェック (令和6年度: 956円)
-    if(wage && wage < 956) {
-        document.getElementById('minWageAlert').style.display = 'block';
-    } else {
-        document.getElementById('minWageAlert').style.display = 'none';
-    }
+    if(wage && wage < 956) document.getElementById('minWageAlert').style.display = 'block';
+    else document.getElementById('minWageAlert').style.display = 'none';
 
-    if (!wage || !hDay || !dWeek) {
-        document.getElementById('fuyouResult').style.display = 'none';
-        return;
-    }
+    if (!wage || !hDay || !dWeek) { document.getElementById('fuyouResult').style.display = 'none'; return; }
 
     const baseMonthly = Math.floor(wage * hDay * 4.33 * dWeek); 
     const totalMonthly = baseMonthly + trans;
@@ -241,92 +308,20 @@ function calcFuyou() {
     const totalYearly = totalMonthly * 12; 
 
     document.getElementById('fuyouResult').style.display = 'block';
-    document.getElementById('baseMonthly').innerText = baseMonthly.toLocaleString();
     document.getElementById('totalMonthly').innerText = totalMonthly.toLocaleString();
+    document.getElementById('totalYearly').innerText = totalYearly.toLocaleString();
 
-    const setStatus = (id, text, type) => {
+    const setStatus = (id, limit, val, type) => {
         const el = document.getElementById(id);
-        el.innerText = text;
-        el.className = type;
+        if (val < limit) { el.innerText = "範囲内"; el.className = "status-safe"; }
+        else { el.innerText = type===106?"要確認":"超過"; el.className = type===106?"status-warn":"status-danger"; }
     };
-
-    if (baseYearly < 1030000) setStatus('wall103', "範囲内 (OK)", "status-safe");
-    else setStatus('wall103', "超過の可能性あり", "status-danger");
-
-    if (baseMonthly < 88000) setStatus('wall106', "範囲内", "status-safe");
-    else setStatus('wall106', "要確認 (月8.8万超)", "status-warn");
-
-    if (totalYearly < 1300000) setStatus('wall130', "範囲内 (OK)", "status-safe");
-    else setStatus('wall130', "超過の可能性あり", "status-danger");
-
-    const limit103 = (1030000 / 12 / 4.33 / wage).toFixed(1);
-    let limit130 = 0;
-    const transYearly = trans * 12;
-    if (1300000 > transYearly) {
-        limit130 = ((1300000 - transYearly) / 12 / 4.33 / wage).toFixed(1);
-    } else {
-        limit130 = "0";
-    }
-
-    document.getElementById('limit103').innerText = limit103;
-    document.getElementById('limit130').innerText = limit130;
+    setStatus('wall103', 1030000, baseYearly);
+    setStatus('wall106', 88000, baseMonthly, 106);
+    setStatus('wall130', 1300000, totalYearly);
 }
 
-// --- 2. 給付日数 & 再就職手当ロジック ---
-let currentTotalDays = 0; // 所定給付日数を保持
-
-function calcBenefit() {
-    const age = parseInt(document.getElementById('ageAtLeft').value);
-    const ins = parseInt(document.getElementById('insPeriod').value);
-    const res = document.getElementById('leftReason').value;
-    if (!age) return;
-    
-    let days = 0;
-    if (res === "general") {
-        if (ins >= 20) days = 150; else if (ins >= 10) days = 120; else if (ins >= 1) days = 90; else days = 0;
-    } else {
-        if (age < 30) { if (ins >= 5) days = 120; else days = 90; }
-        else if (age < 35) { if (ins >= 10) days = 210; else if (ins >= 5) days = 180; else days = 120; }
-        else if (age < 45) { if (ins >= 20) days = 270; else if (ins >= 10) days = 240; else if (ins >= 5) days = 180; else days = 150; }
-        else if (age < 60) { if (ins >= 20) days = 330; else if (ins >= 10) days = 270; else if (ins >= 5) days = 240; else days = 180; }
-        else { if (ins >= 20) days = 240; else if (ins >= 10) days = 210; else if (ins >= 5) days = 180; else days = 150; }
-    }
-    
-    currentTotalDays = days; // グローバル変数に保存
-    document.getElementById('benefitResult').style.display = 'block';
-    document.getElementById('benefitVal').innerText = days > 0 ? days + "日" : "支給なし(要件確認)";
-    
-    calcReemploy(); // 再計算
-}
-
-function calcReemploy() {
-    const remain = parseInt(document.getElementById('remainDays').value);
-    const resultBox = document.getElementById('reemployResult');
-    const valBox = document.getElementById('reemployVal');
-    const detailBox = document.getElementById('reemployDetail');
-
-    if (!currentTotalDays || !remain) {
-        resultBox.style.display = 'none';
-        return;
-    }
-
-    const ratio = remain / currentTotalDays;
-    let rate = 0;
-    if (ratio >= 2/3) rate = 70;
-    else if (ratio >= 1/3) rate = 60;
-
-    resultBox.style.display = 'block';
-    if (rate > 0) {
-        valBox.innerText = `支給率 ${rate}% の対象`;
-        detailBox.innerText = `所定給付日数(${currentTotalDays}日)の${Math.floor(ratio*100)}%を残しています。\n(基本手当日額 × 残日数 × ${rate}%)`;
-    } else {
-        valBox.innerText = "支給対象外の可能性";
-        valBox.style.color = "#d32f2f";
-        detailBox.innerText = `残日数が所定給付日数の1/3未満(${Math.floor(ratio*100)}%)です。`;
-    }
-}
-
-// --- 3. 学歴計算 (共通) ---
+// --- 4. 学歴/期間 (既存) ---
 function getW(y) {
     if (y >= 2019) return `令和${y-2018==1?'元':y-2018}年`;
     if (y >= 1989) return `平成${y-1988==1?'元':y-1988}年`;
@@ -335,19 +330,13 @@ function getW(y) {
 }
 function calcEdu() {
     const y = parseInt(document.getElementById('birthYear').value);
-    if (!y || y < 1900 || y > 2026) return;
+    if (!y) return;
     document.getElementById('eduResult').style.display = 'block';
     const base = document.getElementById('isEarly').checked ? y - 1 : y;
-    const list = [
-        {l:"小学校 卒業", o:13, m:3}, {l:"中学校 卒業", o:16, m:3},
-        {l:"高校 卒業", o:19, m:3}, {l:"大学(4年) 卒業", o:23, m:3}
-    ];
-    let h = "";
-    list.forEach(i => { h += `<tr><td>${i.l}</td><td>${i.o+base}年(${getW(i.o+base)})${i.m}月</td></tr>`; });
+    const list = [ {l:"中卒", o:16, m:3}, {l:"高卒", o:19, m:3}, {l:"大卒", o:23, m:3} ];
+    let h = ""; list.forEach(i => { h += `<tr><td>${i.l}</td><td>${i.o+base}年(${getW(i.o+base)})${i.m}月</td></tr>`; });
     document.getElementById('eduTableBody').innerHTML = h;
 }
-
-// --- 4. 期間計算 (共通) ---
 function calcPeriod() {
     const s = new Date(document.getElementById('startD').value);
     const e = new Date(document.getElementById('endD').value);
@@ -358,7 +347,26 @@ function calcPeriod() {
     if (dd < 0) { mm--; const last = new Date(e.getFullYear(), e.getMonth(), 0); dd += last.getDate(); }
     if (mm < 0) { yy--; mm += 12; }
     document.getElementById('periodResult').style.display = 'block';
-    document.getElementById('periodVal').innerText = yy < 0 ? "日付エラー" : `${yy}年 ${mm}ヶ月 ${dd}日`;
+    document.getElementById('periodVal').innerText = yy < 0 ? "エラー" : `${yy}年 ${mm}ヶ月 ${dd}日`;
+}
+// --- 5. 給付日数 (既存) ---
+function calcBenefit() {
+    const age = parseInt(document.getElementById('ageAtLeft').value);
+    const ins = parseInt(document.getElementById('insPeriod').value);
+    const res = document.getElementById('leftReason').value;
+    if (!age) return;
+    let days = 0;
+    if (res === "general") {
+        if (ins >= 20) days = 150; else if (ins >= 10) days = 120; else if (ins >= 1) days = 90;
+    } else {
+        if (age < 30) days = ins>=5 ? 120 : 90;
+        else if (age < 35) days = ins>=10 ? 210 : (ins>=5 ? 180 : 120);
+        else if (age < 45) days = ins>=20 ? 270 : (ins>=10 ? 240 : (ins>=5 ? 180 : 150));
+        else if (age < 60) days = ins>=20 ? 330 : (ins>=10 ? 270 : (ins>=5 ? 240 : 180));
+        else days = ins>=20 ? 240 : (ins>=10 ? 210 : (ins>=5 ? 180 : 150));
+    }
+    document.getElementById('benefitResult').style.display = 'block';
+    document.getElementById('benefitVal').innerText = days + "日";
 }
 </script>
 </body>
